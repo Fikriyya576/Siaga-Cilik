@@ -1,0 +1,2264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiagaCilik: Detektif Iklim Sekolahku</title>
+    
+    <style>
+        :root {
+            --bg: #f0fdf4;
+            --text: #0f172a;
+            --primary: #059669;
+            --primary-hover: #047857;
+            --secondary: #0ea5e9;
+            --accent: #f59e0b;
+            --card-bg: #ffffff;
+            --border: #cbd5e1;
+            --radius: 16px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        /* High Contrast Mode */
+        body.high-contrast {
+            --bg: #121212;
+            --text: #ffffff;
+            --primary: #fbbf24;
+            --primary-hover: #f59e0b;
+            --secondary: #38bdf8;
+            --card-bg: #1e1e1e;
+            --border: #475569;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.text-large { font-size: 1.2rem; }
+        body.text-xlarge { font-size: 1.4rem; }
+
+        * { box-sizing: border-box; }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 90px;
+        }
+        
+        h1, h2, h3, h4 { margin-top: 0; }
+        
+        .card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Responsive Buttons */
+        button {
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            padding: 12px 20px;
+            min-height: 48px;
+            transition: transform 0.1s, opacity 0.2s, background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button:active { transform: scale(0.96); }
+        button:focus-visible { outline: 4px solid var(--accent); outline-offset: 2px; }
+        
+        .btn-primary { background-color: var(--primary); color: #fff; }
+        .high-contrast .btn-primary { color: #000; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        
+        .btn-secondary { background-color: var(--secondary); color: #fff; }
+        .high-contrast .btn-secondary { color: #000; }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--text);
+        }
+        .btn-outline:hover, .btn-outline.active { background-color: var(--primary); color: #fff; }
+        .high-contrast .btn-outline:hover, .high-contrast .btn-outline.active { color: #000; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 600px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+        
+        .grid-3 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 768px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
+
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.4);
+            border: 2px solid var(--border);
+            z-index: 1000;
+            width: 90%;
+            max-width: 550px;
+            display: none;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 999;
+            display: none;
+        }
+
+        .stage-container { display: none; }
+        .stage-container.active { display: block; animation: fadeIn 0.4s ease; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .avatar-select {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+            border: 3px solid transparent;
+            border-radius: var(--radius);
+            cursor: pointer;
+            background: var(--bg);
+        }
+        .avatar-select.selected { border-color: var(--primary); background: #d1fae5; }
+        .high-contrast .avatar-select.selected { background: #333; }
+        .avatar-emoji { font-size: 4rem; line-height: 1.1; margin-bottom: 8px; }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--card-bg);
+            color: var(--text);
+            margin-bottom: 12px;
+            font-family: inherit;
+        }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 20 / 21;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
+            background: #e2e8f0;
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 2px solid var(--border);
+        }
+        .high-contrast .map-container { background: #262626; }
+        
+        .map-spot {
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.25);
+            transition: transform 0.2s;
+            border: 3px solid #fff;
+        }
+        .high-contrast .map-spot { color: #000; border-color: #000; }
+        .map-spot:hover { transform: scale(1.1); }
+        .map-spot.done { background: var(--secondary); }
+
+        .sort-box {
+            border: 3px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            min-height: 140px;
+            text-align: center;
+            background: var(--bg);
+        }
+        .draggable-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-badge {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 12px 18px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .role-legend{margin-top:8px;font-size:.9rem;font-weight:normal}.role-legend summary{cursor:pointer;min-height:48px;display:flex;align-items:center;font-weight:bold}.role-legend ul{margin:4px 0;padding-left:20px}
+        .high-contrast .role-badge { background: #0284c7; color: #fff; }
+
+        /* Dedicated Print Styles */
+        @media print {
+            body { background: #ffffff !important; color: #000000 !important; }
+            body * { visibility: hidden !important; }
+            #printable-mission-card, #printable-mission-card * { visibility: visible !important; }
+            #printable-mission-card {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                padding: 24px !important;
+                border: 4px solid #059669 !important;
+                background: #ffffff !important;
+                box-shadow: none !important;
+                border-radius: 12px !important;
+            }
+            .no-print { display: none !important; }
+        }
+
+        /* Breathing Animation */
+        .breath-circle {
+            width: 110px; height: 110px;
+            border-radius: 50%;
+            background: var(--secondary);
+            margin: 30px auto;
+            opacity: 0.85;
+            animation: breath 8s infinite ease-in-out;
+        }
+        @keyframes breath {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.8); }
+            100% { transform: scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .breath-circle { animation: none; }
+            .stage-container.active { animation: none; }
+        }
+
+        .bottom-nav {
+            display: flex;
+            gap: 14px;
+            justify-content: space-between;
+            margin-top: 28px;
+            padding-top: 16px;
+            border-top: 2px solid var(--border);
+        }
+
+        /* Pembuka (hero) & bilah atas yang lebih ringkas */
+        .hero{background:linear-gradient(180deg,#e9fbf4,#fffbe0);border:3px solid var(--primary)}
+        .top-nav .btn-outline{padding:8px 12px;font-size:.85rem;min-height:48px}
+        .hero-boti{transform-box:fill-box;transform-origin:50% 100%;animation:heroFloat 2.4s ease-in-out infinite}
+        .hero-cloud{animation:heroDrift 14s ease-in-out infinite alternate}
+        @keyframes heroFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-14px) rotate(2deg)}}
+        @keyframes heroDrift{from{transform:translateX(0)}to{transform:translateX(40px)}}
+        @media (prefers-reduced-motion: reduce){.hero-boti,.hero-cloud{animation:none}}
+        .sr-only{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+        .toast-msg{display:none;position:fixed;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:#12332b;color:#fff;padding:14px;border-radius:14px;font-weight:bold;z-index:9999}
+        h1:focus,h2:focus{outline:3px solid #f08a00;outline-offset:4px}
+        .map-art{position:absolute;inset:0;width:100%;height:100%}
+        #map-spots-container{position:absolute;inset:0}
+        .map-spot:focus-visible{outline:4px solid #f08a00;outline-offset:3px}
+        /* Menu atas: judul + tahap sebaris, 5 tombol sama lebar */
+        .top-nav{display:block;margin-bottom:16px}
+        .top-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+        .brand{margin:0;font-size:1.25rem;color:var(--primary)}
+        .stage-pill{background:var(--primary);color:#fff;border-radius:999px;padding:6px 14px;font-weight:bold;font-size:.9rem;white-space:nowrap}
+        .prog{height:8px;background:#d7efe3;border-radius:99px;overflow:hidden;margin-bottom:12px}
+        #prog-fill{height:100%;width:16.7%;background:linear-gradient(90deg,#2e9e5b,#ffd54a);border-radius:99px;transition:width .6s ease}
+        .toolbar{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+        .toolbar .btn-outline{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;min-width:0;min-height:60px;padding:6px 2px;font-size:.78rem;line-height:1.15;border-radius:14px}
+        .toolbar .btn-outline[aria-pressed="true"]{background:#e6f7ee}
+        .tb-ic{font-size:1.5rem;line-height:1}
+        #rate-group .btn-outline[aria-pressed="true"]{background:#d9f2e4;border-width:4px;font-weight:bold}
+        /* Kontras tinggi: semua kotak berlatar terang diubah jadi hitam agar teks putih terbaca */
+        body.high-contrast .hero,
+        body.high-contrast .tips,
+        body.high-contrast [style*="#fff8dc"],
+        body.high-contrast [style*="#fef3c7"],
+        body.high-contrast [style*="#e0f2fe"],
+        body.high-contrast [style*="#eef8ff"],
+        body.high-contrast [style*="#fffbebe6"],
+        body.high-contrast [style*="#dcfce7"],
+        body.high-contrast [style*="#f1f5f9"],
+        body.high-contrast [style*="#ffffff"],
+        body.high-contrast [style*="background:white"],
+        body.high-contrast [style*="background:#fff;"] {
+            background: #000 !important;
+            color: #fff !important;
+            border-color: #fbbf24 !important;
+        }
+        body.high-contrast .hero h1, body.high-contrast .hero h3 { color: #fbbf24 !important; }
+        .reading-now{outline:5px solid #f08a00 !important;outline-offset:4px;box-shadow:0 0 0 10px rgba(240,138,0,.28) !important;border-radius:14px}
+        .wake-note{display:none;position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:12px;right:12px;background:#e3f4ff;color:#0b3d5c;border:2px solid #0b7a75;padding:10px 14px;border-radius:14px;font-weight:bold;font-size:.9rem;z-index:9998;text-align:center}
+        .audio-hint{display:none;position:fixed;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:#ffd54a;color:#222;padding:14px;border-radius:14px;font-weight:bold;text-align:center;z-index:9998;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+        /* Mode halaman pembuka: tahap disembunyikan sampai tombol Mulai ditekan */
+        body.cover-mode .stage-container{display:none !important}
+        body:not(.cover-mode) #cover{display:none}
+        body.cover-mode #prog-fill{width:0 !important}
+        body.cover-mode .bottom-nav{display:none !important}
+        .bottom-nav .btn-outline{flex:0 0 34%; min-height:56px; display:flex; align-items:center; justify-content:center; text-align:center}
+        .bottom-nav .btn-primary{flex:1; min-height:56px}
+
+        /* Gambar bergerak lembut (angin, air, awan). Mati otomatis jika perangkat meminta gerak dikurangi */
+        .a-bird{animation:aBird 10s ease-in-out infinite}
+        .a-wing{transform-box:fill-box;transform-origin:50% 100%;animation:aWing .7s ease-in-out infinite alternate}
+        .a-flag{transform-box:fill-box;transform-origin:0 50%;animation:aFlag 1.8s ease-in-out infinite}
+        .a-cloud{animation:aCloud 22s ease-in-out infinite alternate}
+        .a-rain{animation:aRain 1.5s linear infinite}
+        .a-float{animation:aFloat 3s ease-in-out infinite}
+        .a-flow{animation:aFlow 2.4s linear infinite}
+        .a-smell{transform-box:fill-box;transform-origin:50% 100%;animation:aSmell 2.6s ease-in-out infinite}
+        .a-fly{animation:aFly 9s ease-in-out infinite}
+        .a-flap{transform-box:fill-box;transform-origin:50% 50%;animation:aFlap .4s ease-in-out infinite alternate}
+        .a-sway{transform-box:fill-box;transform-origin:50% 100%;animation:aSway 3s ease-in-out infinite alternate}
+        .a-tree{transform-box:fill-box;transform-origin:50% 100%;animation:aSway2 4.5s ease-in-out infinite alternate}
+        .d2{animation-delay:-.9s}.d3{animation-delay:-1.8s}.d4{animation-delay:-2.4s}
+        @keyframes aBird{0%,100%{transform:translate(0,0)}50%{transform:translate(26px,-8px)}}
+        @keyframes aWing{from{transform:scaleY(1)}to{transform:scaleY(.5)}}
+        @keyframes aFlag{0%,100%{transform:skewY(0) scaleX(1)}50%{transform:skewY(-7deg) scaleX(.92)}}
+        @keyframes aCloud{from{transform:translateX(0)}to{transform:translateX(-36px)}}
+        @keyframes aRain{0%{transform:translateY(-6px);opacity:0}30%{opacity:1}100%{transform:translateY(14px);opacity:0}}
+        @keyframes aFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+        @keyframes aFlow{0%{transform:translateX(0);opacity:.2}30%{opacity:1}100%{transform:translateX(40px);opacity:.1}}
+        @keyframes aSmell{0%{transform:translateY(4px) scale(.8);opacity:.2}50%{opacity:1}100%{transform:translateY(-8px) scale(1.1);opacity:0}}
+        @keyframes aFly{0%,100%{transform:translate(0,0)}25%{transform:translate(-18px,-10px)}50%{transform:translate(-36px,-2px)}75%{transform:translate(-16px,-14px)}}
+        @keyframes aFlap{from{transform:scaleX(1)}to{transform:scaleX(.55)}}
+        @keyframes aSway{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
+        @keyframes aSway2{from{transform:rotate(-1.5deg)}to{transform:rotate(1.5deg)}}
+        .boti-wave{transform-box:view-box;transform-origin:350px 196px;animation:botiWave .8s ease-in-out infinite alternate}
+        .boti-lens{transform-box:view-box;transform-origin:298px 206px;animation:botiLens 2.2s ease-in-out infinite alternate}
+        .boti-pulse{transform-box:fill-box;transform-origin:center;animation:botiPulse 1.2s ease-in-out infinite}
+        .boti-eye{transform-box:fill-box;transform-origin:center;animation:botiBlink 3.6s infinite}
+        @keyframes botiWave{from{transform:rotate(-30deg)}to{transform:rotate(25deg)}}
+        @keyframes botiLens{from{transform:rotate(-12deg)}to{transform:rotate(12deg)}}
+        @keyframes botiPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.7);opacity:.55}}
+        @keyframes botiBlink{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+        @media (prefers-reduced-motion: reduce){svg *{animation:none !important}}
+        .ck{display:flex;gap:10px;align-items:flex-start;min-height:48px;padding:6px 0;cursor:pointer}
+        .ck input{width:28px;height:28px;margin-top:2px;flex:0 0 auto;accent-color:var(--primary);cursor:pointer}
+        .btn-outline.selected{background:#d9f2e4;border-width:4px;font-weight:bold}
+        .btn-primary[disabled]{opacity:.5;cursor:not-allowed}
+    .quiz-q{background:var(--bg);padding:12px;border-radius:10px;margin-top:12px}
+    .quiz-q .qt{font-weight:bold;margin:0 0 10px}
+    .quiz-opts{display:grid;gap:8px}
+    .quiz-opts .btn-outline{text-align:left;min-height:52px}
+    .quiz-fb{margin:10px 0 0;font-weight:bold}
+    .quiz-fb.ok{color:var(--primary)}.quiz-fb.try{color:#b45309}
+    body.high-contrast .quiz-fb.try{color:#fbbf24}
+    .fitur-list{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+    .fitur-list li{display:flex;gap:12px;align-items:flex-start;background:var(--bg);padding:10px 12px;border-radius:10px}
+    .fitur-list .fi{font-size:1.5rem;line-height:1.2}
+    </style>
+</head>
+<body class="cover-mode">
+    <div id="sr-live" class="sr-only" aria-live="polite" role="status"></div>
+
+    <div class="container">
+        <!-- Top Navigation -->
+        <div class="top-nav no-print">
+            <div class="top-row">
+                <h2 class="brand">🕵️ SiagaCilik</h2>
+                <span id="stage-indicator" class="stage-pill">Selamat Datang! 🌟</span>
+            </div>
+            <div class="prog" aria-hidden="true"><div id="prog-fill"></div></div>
+            <div class="toolbar" role="toolbar" aria-label="Menu bantuan">
+                <button class="btn-outline" id="btn-read" onclick="Reader.toggle()" aria-label="Bacakan tahap ini"><span class="tb-ic" aria-hidden="true">🔊</span><span>Baca</span></button>
+                <button class="btn-outline" onclick="toggleJedaTenang()" aria-label="Jeda Tenang"><span class="tb-ic" aria-hidden="true">🧘</span><span>Tenang</span></button>
+                <button class="btn-outline" id="btn-bgm-toggle" onclick="toggleMusic()" aria-label="Musik latar" aria-pressed="true"><span class="tb-ic" aria-hidden="true">🎵</span><span>Musik</span></button>
+                <button class="btn-outline" onclick="togglePanel('accessibility-panel')" aria-label="Aksesibilitas"><span class="tb-ic" aria-hidden="true">⚙️</span><span>Akses</span></button>
+                <button class="btn-outline" onclick="togglePanel('teacher-panel')" aria-label="Mode Guru"><span class="tb-ic" aria-hidden="true">👨‍🏫</span><span>Guru</span></button>
+            </div>
+        </div>
+
+        <!-- Overlay for Panels -->
+        <div class="overlay" id="overlay" onclick="closeAllPanels()"></div>
+
+        <!-- Accessibility Panel -->
+        <div class="panel" id="accessibility-panel" role="dialog" aria-labelledby="acc-title">
+            <h2 id="acc-title">⚙️ Panel Aksesibilitas</h2>
+            
+            <div style="margin-bottom:16px;">
+                <label style="font-weight:bold; display:block; margin-bottom:8px;">🔊 Narasi Suara (Speech)</label>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-outline" id="btn-sound-on" onclick="setSound(true)">Aktif</button>
+                    <button class="btn-outline" id="btn-sound-off" onclick="setSound(false)">Mati</button>
+                </div>
+                <label style="font-weight:bold; display:block; margin:12px 0 8px;">🐢 Kecepatan Suara</label>
+                <div style="display:flex; gap:8px;" id="rate-group">
+                    <button class="btn-outline" aria-pressed="false" onclick="setSpeechRate(0.75, this)">Lambat</button>
+                    <button class="btn-outline" aria-pressed="true" onclick="setSpeechRate(0.95, this)">Normal</button>
+                    <button class="btn-outline" aria-pressed="false" onclick="setSpeechRate(1.2, this)">Cepat</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="font-weight:bold; display:block; margin-bottom:8px;">🎵 Musik Latar (Backsound)</label>
+                <button class="btn-outline" id="btn-acc-bgm" onclick="toggleMusic()" style="width:100%;">Alihkan Musik Latar</button>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="font-weight:bold; display:block; margin-bottom:8px;">📢 Volume Suara (Amplifier Boost)</label>
+                <input type="range" id="volume-slider" min="0" max="5" step="0.5" value="3.5" style="width:100%;" onchange="updateVolume(this.value)">
+                <div style="text-align:center; font-size:0.9rem;" id="volume-label">Level: 3.5x</div>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="font-weight:bold; display:block; margin-bottom:8px;">Aa Ukuran Teks</label>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-outline" onclick="setTextSize('normal')">Normal</button>
+                    <button class="btn-outline" onclick="setTextSize('large')">Besar</button>
+                    <button class="btn-outline" onclick="setTextSize('xlarge')">Sangat Besar</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="font-weight:bold; display:block; margin-bottom:8px;">👁️ Mode Kontras</label>
+                <button class="btn-outline" onclick="toggleContrast()" style="width:100%;">Alihkan Kontras Tinggi</button>
+            </div>
+
+            <button class="btn-primary" style="width:100%; margin-top:12px;" onclick="closeAllPanels()">Tutup</button>
+        </div>
+
+        <!-- Teacher Mode Panel -->
+        <div class="panel" id="teacher-panel" role="dialog" aria-labelledby="teacher-title">
+            <h2 id="teacher-title">👨‍🏫 Mode Guru (Panduan Integrasi)</h2>
+            <div style="font-size:0.9rem;">
+                <p><strong>Capaian Pembelajaran (Fase C - IPAS):</strong> Murid memahami konsep perubahan iklim, membedakan cuaca & iklim, serta mensimulasikan langkah kesiapsiagaan bencana.</p>
+                
+                <h3>🎯 Target Pembelajaran (TP1 - TP7)</h3>
+                <ul style="padding-left:18px;">
+                    <li><strong>TP1:</strong> Mengamati 3+ kondisi lingkungan sekolah.</li>
+                    <li><strong>TP2:</strong> Menganalisis aksi pada komponen biotik/abiotik.</li>
+                    <li><strong>TP3:</strong> Merancang aksi hemat energi & pencahayaan alami.</li>
+                    <li><strong>TP4:</strong> Membedakan cuaca & iklim melalui pola data.</li>
+                    <li><strong>TP5:</strong> Menyusun SOP keselamatan bencana secara logis.</li>
+                    <li><strong>TP6:</strong> Memahami cara kerja KA/AI sederhana dan verifikasi manusia.</li>
+                    <li><strong>TP7:</strong> Membuat Kartu Misi Nyata tanpa data pribadi.</li>
+                </ul>
+
+                <h3>Kaitan Pembelajaran Mendalam (Deep Learning)</h3>
+                <ul style="padding-left:18px;">
+                    <li><strong>Berkesadaran:</strong> Latihan bernapas tenang (Jeda Tenang) dan refleksi emosi.</li>
+                    <li><strong>Bermakna:</strong> Sekolah sendiri sebagai laboratorium nyata (kontekstual).</li>
+                    <li><strong>Menggembirakan:</strong> Pendekatan gamifikasi tanpa beban skor/waktu.</li>
+                </ul>
+                <details>
+                    <summary><strong>⏱️ Alur, durasi, dan pertanyaan pemantik</strong> (±45 menit, termasuk Kuis Kilat; bukan hitung mundur)</summary>
+                    <ol style="padding-left:20px;">
+                        <li><strong>Misi Tim Detektif (±5 menit).</strong> Membangun rasa ingin tahu dan peran kelompok. Pemantik: "Mengapa begitu? Apa yang kamu lihat saat hujan?"</li>
+                        <li><strong>Menyelidiki Peta Sekolah (±13 menit)</strong> (TP1-TP3). Pemantik: "Mengapa air turun setelah selokan dibersihkan? Apa yang sama dan beda antartitik?"</li>
+                        <li><strong>Cuaca atau Iklim? (±6 menit)</strong> (TP4). Pemantik: "Berapa lama pola ini berulang?"</li>
+                        <li><strong>Hari Hujan Deras dan Latihan Siaga (±9 menit)</strong> (TP2, TP5). Pemantik: "Siapa yang paling butuh bantuan, dan bagaimana membantunya tanpa membuatnya merasa berbeda?"</li>
+                        <li><strong>Latih Robot (±6 menit)</strong> (TP6). Pemantik: "Mengapa Boti bisa keliru pada benda yang aneh?"</li>
+                        <li><strong>Misi Nyata dan Refleksi (±5 menit)</strong> (TP7). Pemantik: "Mengapa aksi ini yang kamu pilih?"</li>
+                    </ol>
+                </details>
+
+                <details>
+                    <summary><strong>✅ Ceklis observasi dan asesmen</strong></summary>
+                    <ul id="ceklis-guru" style="list-style:none; padding-left:0;">
+                        <li><label class="ck"><input type="checkbox"> <span>Setiap anggota mendapat giliran peran (Pembaca, Pengoperasi, Pencatat, Pendamping).</span></label></li>
+                        <li><label class="ck"><input type="checkbox"> <span>Murid mencatat 3 kondisi lingkungan atau lebih (TP1).</span></label></li>
+                        <li><label class="ck"><input type="checkbox"> <span>Murid menjelaskan 2 sebab-akibat biotik/abiotik atau lebih (TP2).</span></label></li>
+                        <li><label class="ck"><input type="checkbox"> <span>Kelompok memilih 3 upaya hemat energi/cahaya dan angin alami atau lebih (TP3).</span></label></li>
+                        <li><label class="ck"><input type="checkbox"> <span>Murid dapat membedakan cuaca dan iklim serta membaca pola (TP4).</span></label></li>
+                        <li><label class="ck"><input type="checkbox"> <span>Urutan langkah aman benar minimal 4 dari 5 (TP5).</span></label></li>
+                        <li><label class="ck"><input type="checkbox"> <span>Murid menjelaskan bahwa hasil robot bisa keliru dan perlu diperiksa manusia (TP6).</span></label></li>
+                        <li><label class="ck"><input type="checkbox"> <span>Murid menjawab Kuis Kilat di Tahap 2-5 dan dapat menjelaskan alasan jawabannya (TP2, TP4-TP6).</span></label></li>
+                        <li><label class="ck"><input type="checkbox"> <span>Kartu Misi Nyata dibuat tanpa data pribadi (TP7).</span></label></li>
+                    </ul>
+                    <button class="btn-outline" style="min-height:48px;" onclick="document.querySelectorAll('#ceklis-guru input').forEach(c => c.checked = false)">↺ Kosongkan ceklis</button>
+                    <p style="font-size:.85rem;"><em>Centang hanya tersimpan sementara di layar ini dan hilang saat halaman dimuat ulang. Tidak ada data yang dikirim atau disimpan.</em></p>
+                    <p><strong>Jenis asesmen:</strong> <em>untuk pembelajaran</em> (pemantik "Mengapa begitu?" di awal dan tengah), <em>dalam pembelajaran</em> (ceklis observasi di atas dan Kuis Kilat di Tahap 2-5), dan <em>sebagai pembelajaran</em> (refleksi diri dan stiker dari kelompok lain di Tahap 6).</p>
+                </details>
+
+                <details>
+                    <summary><strong>🧭 Sesuaikan dengan sekolah dan daerah</strong></summary>
+                    <p style="font-size:.85rem;">Isi yang perlu saja, lalu tekan Terapkan. Berlaku selama halaman ini terbuka dan tidak ada data yang dikirim.</p>
+                    <label for="lokal-sekolah" style="font-weight:bold;display:block;margin:8px 0 4px;">Nama sekolah</label>
+                    <input type="text" id="lokal-sekolah" maxlength="40" placeholder="Contoh: SDN Pakel 1">
+                    <label for="lokal-daerah" style="font-weight:bold;display:block;margin:8px 0 4px;">Daerah (kota atau kabupaten)</label>
+                    <input type="text" id="lokal-daerah" maxlength="40" placeholder="Contoh: Jombang">
+                    <label for="lokal-kearifan" style="font-weight:bold;display:block;margin:8px 0 4px;">Contoh kearifan lokal atau musim di daerahmu</label>
+                    <input type="text" id="lokal-kearifan" maxlength="140" placeholder="Contoh: petani mulai menanam padi saat musim hujan tiba">
+                    <div style="display:flex;gap:8px;margin:12px 0;">
+                        <button class="btn-primary" onclick="applyLokal()">Terapkan</button>
+                        <button class="btn-outline" onclick="resetLokal()">Atur ulang</button>
+                    </div>
+                    <p style="font-size:.85rem;"><strong>Offline:</strong> media ini tidak memakai internet. Simpan file HTML di perangkat lalu buka dengan Chrome. Narasi memakai suara bawaan perangkat, jadi pasang paket suara Bahasa Indonesia agar tetap jalan tanpa sinyal. Perubahan permanen dilakukan di bagian SKENARIO dan NARASI pada kode.</p>
+                </details>
+
+                <details>
+                    <summary><strong>♿ Saran adaptasi murid berkebutuhan khusus</strong></summary>
+                    <ul style="padding-left:18px;">
+                        <li><strong>Tunanetra/low vision:</strong> nyalakan narasi suara, ukuran teks besar, dan kontras tinggi. Anggota kelompok membacakan layar. Titik peta dapat dipilih dengan Tab dan Enter.</li>
+                        <li><strong>Tunarungu/sulit mendengar:</strong> subtitle dan teks selalu tampil, setiap bunyi disertai ikon atau teks.</li>
+                        <li><strong>Pengguna kursi roda:</strong> beri peran pengambil keputusan, pastikan jalur SOP dan Gerak Siaga ramah semua murid.</li>
+                        <li><strong>Sensitif suara atau mudah cemas:</strong> matikan musik dan efek di panel Akses, pakai Jeda Tenang. Tidak ada sirene atau hitung mundur.</li>
+                        <li><strong>Kesulitan membaca atau motorik:</strong> teks besar, pilih dengan ketuk, kelompok membantu, dan waktu fleksibel.</li>
+                        <li><strong>Mudah teralihkan:</strong> bagi pembelajaran menjadi beberapa sesi singkat.</li>
+                    </ul>
+                </details>
+
+                <details>
+                    <summary><strong>📄 Petunjuk versi tanpa perangkat</strong></summary>
+                    <ul style="padding-left:18px;">
+                        <li>Cetak atau tulis kartu: 5 kartu titik (gambar, masalah, 3 pilihan tindakan), kartu prediksi, 5 kartu cuaca/iklim dengan 2 kotak, dan 5 kartu langkah siaga.</li>
+                        <li>Siapkan kartu benda (botol plastik, kulit pisang, kertas, kaleng, daun kering) dan satu benda ambigu (kertas basah) dengan 3 kotak pilah.</li>
+                        <li>Guru berperan sebagai "Boti": menebak berdasarkan contoh murid, lalu sengaja memberi benda ambigu agar murid melihat bahwa hasil bisa keliru.</li>
+                        <li>Murid mengisi Kartu Misi Nyata di kertas: aksi, satu kalimat alasan, waktu, dan mitra (tanpa nama lengkap atau data pribadi).</li>
+                        <li>Tetap bagi peran kelompok dan gunakan pemantik yang sama.</li>
+                    </ul>
+                </details>
+            </div>
+            <button class="btn-primary" style="width:100%; margin-top:16px;" onclick="closeAllPanels()">Tutup Mode Guru</button>
+        </div>
+
+        <!-- Jeda Tenang Panel -->
+        <div class="panel" id="jeda-panel" role="dialog" aria-labelledby="jeda-title" style="text-align:center;">
+            <h2 id="jeda-title">🧘 Jeda Tenang</h2>
+            <p>Mari istirahatkan pikiran sejenak. Ikuti lingkaran ini untuk 3 kali tarikan napas.</p>
+            <div class="breath-circle"></div>
+            <p id="breath-text" style="font-size:1.2rem; font-weight:bold; margin-top:20px;">Tarik napas...</p>
+            <button class="btn-primary" style="margin-top:20px;" onclick="closeAllPanels()">Selesai, Lanjut Belajar!</button>
+        </div>
+
+        <main id="main-content" aria-live="polite">
+            
+            <!-- HALAMAN PEMBUKA (terpisah dari Tahap 1) -->
+            <section id="cover" class="cover-page" aria-label="Halaman pembuka">
+                <div class="card hero" style="text-align:center;">
+                    <svg viewBox="0 0 400 240" role="img" aria-label="Ilustrasi: sekolah yang ceria, robot Boti membawa kaca pembesar, dan awan hujan tipis di langit" style="width:100%;border-radius:16px;display:block">
+                        <defs>
+                            <linearGradient id="hSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#76cdf3"/><stop offset="1" stop-color="#e6f7fc"/></linearGradient>
+                            <linearGradient id="hGr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a5e6a8"/><stop offset="1" stop-color="#76c884"/></linearGradient>
+                            <radialGradient id="hGlow"><stop offset="0" stop-color="#fff3a0"/><stop offset="1" stop-color="#fff3a0" stop-opacity="0"/></radialGradient>
+                        </defs>
+                        <rect width="400" height="240" fill="url(#hSky)"/>
+                        <circle cx="50" cy="45" r="40" fill="url(#hGlow)"/><circle cx="50" cy="45" r="22" fill="#ffd54a"/>
+                        <g stroke="#ffd54a" stroke-width="3" stroke-linecap="round"><line x1="78" y1="45" x2="86" y2="45"/><line x1="70" y1="65" x2="75" y2="70"/><line x1="50" y1="73" x2="50" y2="81"/><line x1="30" y1="65" x2="25" y2="70"/><line x1="22" y1="45" x2="14" y2="45"/><line x1="30" y1="25" x2="25" y2="20"/><line x1="50" y1="17" x2="50" y2="9"/><line x1="70" y1="25" x2="75" y2="20"/></g>
+                        <g class="hero-cloud" fill="#fff"><ellipse cx="150" cy="42" rx="32" ry="11"/><ellipse cx="170" cy="34" rx="20" ry="10"/><ellipse cx="128" cy="38" rx="16" ry="8"/></g>
+                        <g class="a-cloud d3"><g fill="#b9cddb"><ellipse cx="338" cy="44" rx="30" ry="12"/><ellipse cx="356" cy="36" rx="18" ry="10"/><ellipse cx="320" cy="40" rx="14" ry="8"/></g><g stroke="#5aa0d6" stroke-width="2.5" stroke-linecap="round"><path class="a-rain" d="M318 58l-3 9"/><path class="a-rain d2" d="M330 60l-3 9"/><path class="a-rain d3" d="M343 58l-3 9"/><path class="a-rain d4" d="M355 60l-3 9"/><path class="a-rain d2" d="M366 58l-3 9" style="animation-delay:-.5s"/></g></g>
+                        <g class="a-bird" fill="none" stroke="#35505a" stroke-width="2" stroke-linecap="round"><path class="a-wing" d="M215 28q5-5 10 0q5-5 10 0"/><path class="a-wing d2" d="M240 44q4-4 8 0q4-4 8 0"/></g>
+                        <path d="M0 152Q70 118 150 142T300 136T400 142V165H0z" fill="#6fbf7a"/><path d="M0 158Q100 136 200 152T400 150V170H0z" fill="#86d08f"/>
+                        <g fill="#4aa860"><circle cx="24" cy="134" r="10"/><circle cx="42" cy="140" r="8"/><circle cx="372" cy="128" r="10"/><circle cx="388" cy="136" r="8"/></g>
+                        <rect y="160" width="400" height="80" fill="url(#hGr)"/>
+                        <path d="M187 200h26l24 40h-74z" fill="#d6d3cb"/><path d="M187 200l-14 40M213 200l14 40" stroke="#b9b5aa" stroke-width="2"/>
+                        <!-- gedung sekolah -->
+                        <rect x="120" y="100" width="160" height="100" fill="#ffd54a" stroke="#0b7a75" stroke-width="3"/><rect x="122" y="186" width="156" height="12" fill="#f2b705"/>
+                        <polygon points="106,102 200,58 294,102" fill="#0b7a75"/>
+                        <g stroke="#075e5a" stroke-width="2" opacity=".6"><line x1="170" y1="72" x2="230" y2="72"/><line x1="146" y1="83" x2="254" y2="83"/><line x1="124" y1="93" x2="276" y2="93"/></g>
+                        <rect x="104" y="100" width="192" height="6" rx="2" fill="#075e5a"/>
+                        <line x1="200" y1="58" x2="200" y2="22" stroke="#6d4c41" stroke-width="3"/><rect class="a-flag" x="201" y="22" width="28" height="8" fill="#e53935"/><rect class="a-flag" x="201" y="30" width="28" height="8" fill="#fff" stroke="#ccc"/>
+                        <rect x="186" y="116" width="28" height="18" rx="3" fill="#fff" stroke="#0b7a75" stroke-width="2"/><text x="200" y="129" font-size="12" font-weight="bold" fill="#0b7a75" text-anchor="middle">SD</text>
+                        <g><rect x="136" y="118" width="40" height="38" fill="#cdeffb" stroke="#0b7a75" stroke-width="3"/><rect x="224" y="118" width="40" height="38" fill="#cdeffb" stroke="#0b7a75" stroke-width="3"/>
+                        <g stroke="#0b7a75" stroke-width="2"><line x1="156" y1="118" x2="156" y2="156"/><line x1="136" y1="137" x2="176" y2="137"/><line x1="244" y1="118" x2="244" y2="156"/><line x1="224" y1="137" x2="264" y2="137"/></g>
+                        <rect x="136" y="118" width="9" height="38" fill="#f48fb1"/><rect x="167" y="118" width="9" height="38" fill="#f48fb1"/><rect x="224" y="118" width="9" height="38" fill="#f48fb1"/><rect x="255" y="118" width="9" height="38" fill="#f48fb1"/>
+                        <rect x="132" y="156" width="48" height="5" rx="2" fill="#e0a800"/><rect x="220" y="156" width="48" height="5" rx="2" fill="#e0a800"/></g>
+                        <rect x="186" y="152" width="28" height="48" rx="3" fill="#8a5a2b"/><rect x="191" y="158" width="18" height="14" rx="2" fill="#cdeffb"/><circle cx="208" cy="180" r="2.5" fill="#ffd54a"/><rect x="180" y="198" width="40" height="4" fill="#cfcac0"/>
+                        <g fill="#43a047"><ellipse cx="126" cy="196" rx="16" ry="10"/><ellipse cx="274" cy="196" rx="16" ry="10"/></g>
+                        <g><circle cx="120" cy="190" r="3" fill="#f06292"/><circle cx="130" cy="193" r="3" fill="#fff"/><circle cx="268" cy="192" r="3" fill="#ffd54a"/><circle cx="280" cy="190" r="3" fill="#f06292"/></g>
+                        <!-- pohon besar -->
+                        <rect x="52" y="150" width="14" height="58" rx="3" fill="#8a5a2b"/><path d="M59 175l-14-12M59 168l12-10" stroke="#8a5a2b" stroke-width="5" stroke-linecap="round"/>
+                        <g class="a-tree"><circle cx="59" cy="124" r="28" fill="#2e9e5b"/><circle cx="38" cy="140" r="19" fill="#43a047"/><circle cx="80" cy="140" r="19" fill="#43a047"/><circle cx="50" cy="114" r="9" fill="#58b865" opacity=".8"/>
+                        <g fill="#e53935"><circle cx="48" cy="130" r="3"/><circle cx="70" cy="122" r="3"/><circle cx="62" cy="144" r="3"/></g></g>
+                        <!-- robot Boti dengan kaca pembesar -->
+                        <g class="hero-boti">
+                            <ellipse cx="330" cy="226" rx="26" ry="4" fill="#000" opacity=".12"/>
+                            <circle class="boti-pulse" cx="330" cy="130" r="12" fill="url(#hGlow)"/><line x1="330" y1="134" x2="330" y2="146" stroke="#075e5a" stroke-width="3"/><circle class="boti-pulse" cx="330" cy="130" r="5" fill="#ffd54a"/>
+                            <rect x="306" y="146" width="48" height="36" rx="12" fill="#0b7a75"/><circle cx="304" cy="164" r="5" fill="#075e5a"/><circle cx="356" cy="164" r="5" fill="#075e5a"/>
+                            <rect x="313" y="152" width="34" height="22" rx="8" fill="#e8fbf6"/><circle class="boti-eye" cx="323" cy="161" r="4" fill="#0b7a75"/><circle class="boti-eye" cx="337" cy="161" r="4" fill="#0b7a75"/><circle cx="324" cy="160" r="1.3" fill="#fff"/><circle cx="338" cy="160" r="1.3" fill="#fff"/><path d="M324 168q6 5 12 0" fill="none" stroke="#0b7a75" stroke-width="2" stroke-linecap="round"/>
+                            <rect x="324" y="182" width="12" height="4" fill="#075e5a"/>
+                            <rect x="310" y="186" width="40" height="32" rx="8" fill="#0f9a8a"/><rect x="318" y="193" width="24" height="14" rx="3" fill="#ffd54a"/><circle cx="324" cy="200" r="2" fill="#0b7a75"/><circle cx="330" cy="200" r="2" fill="#e53935"/><circle cx="336" cy="200" r="2" fill="#0b7a75"/>
+                            <g class="boti-lens"><path d="M284 192L298 206" stroke="#6d4c41" stroke-width="5" stroke-linecap="round"/><circle cx="276" cy="184" r="12" fill="#cdeffb" fill-opacity=".75" stroke="#8d6e63" stroke-width="3.5"/><path d="M270 180q3-5 9-4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g><path d="M310 198L300 206" stroke="#0b7a75" stroke-width="7" stroke-linecap="round"/><circle cx="298" cy="206" r="5" fill="#0f9a8a" stroke="#075e5a" stroke-width="2"/>
+                            <g class="boti-wave"><path d="M350 196l14-14" stroke="#0b7a75" stroke-width="6" stroke-linecap="round"/><circle cx="366" cy="180" r="5" fill="#0b7a75"/></g>
+                            <rect x="314" y="218" width="10" height="9" rx="3" fill="#075e5a"/><rect x="336" y="218" width="10" height="9" rx="3" fill="#075e5a"/>
+                        </g>
+                        <g stroke="#5aa860" stroke-width="2" fill="none" stroke-linecap="round"><path class="a-sway" d="M16 214l3-8 3 8m0 0l3-10 3 10"/><path class="a-sway" d="M376 220l3-8 3 8m0 0l3-10 3 10"/><path class="a-sway" d="M250 228l3-8 3 8m0 0l3-10 3 10"/></g>
+                    </svg>
+                    <h1 style="margin:14px 0 2px;font-size:2.1rem;color:var(--primary)">🕵️ SiagaCilik</h1>
+                    <p style="margin:0;font-weight:bold;font-size:1.15rem">Detektif Iklim Sekolahku</p>
+                    <p id="cover-lokal" style="margin:2px 0 0;font-size:.95rem;display:none"></p>
+                    <p class="large-text">Halo, Tim Detektif! Aku Boti 🤖. Sekolah kita adalah laboratorium virtual. Ayo cari tahu bagaimana sekolah bisa lebih sejuk, hemat, dan siap menghadapi hujan!</p>
+                    <button class="btn-primary" style="font-size:1.2rem;min-height:56px" onclick="startHero(this)">▶ Mulai Misi Detektif</button>
+                </div>
+
+                <div class="card" id="cover-fitur">
+                    <h3 style="margin-top:0;">🧭 Kenalan dengan Tombol Boti</h3>
+                    <ul class="fitur-list">
+                        <li><span class="fi" aria-hidden="true">🔊</span><span><b>Baca</b>: Boti membacakan isi tahap ini. Ketuk lagi untuk jeda.</span></li>
+                        <li><span class="fi" aria-hidden="true">🧘</span><span><b>Tenang</b>: latihan napas pelan saat kamu merasa tegang.</span></li>
+                        <li><span class="fi" aria-hidden="true">🎵</span><span><b>Musik</b>: menyalakan atau mematikan musik latar.</span></li>
+                        <li><span class="fi" aria-hidden="true">⚙️</span><span><b>Akses</b>: mengatur suara, ukuran tulisan, dan warna kontras.</span></li>
+                        <li><span class="fi" aria-hidden="true">👨‍🏫</span><span><b>Guru</b>: panduan, ceklis, dan pengaturan sekolah untuk guru.</span></li>
+                        <li><span class="fi" aria-hidden="true">↔️</span><span><b>Lanjut dan Kembali</b>: pindah tahap, ada di bagian bawah layar.</span></li>
+                        <li><span class="fi" aria-hidden="true">👥</span><span><b>Peran kelompok</b>: Pembaca, Pengoperasi, Pencatat, dan Pendamping bergiliran.</span></li>
+                        <li><span class="fi" aria-hidden="true">🧩</span><span><b>Kuis Kilat</b>: soal singkat di akhir tiap materi, tanpa nilai.</span></li>
+                    </ul>
+                </div>
+
+                <div class="card tips" style="background:#fff8dc; border:3px solid #f5a623;">
+                    <h3 style="margin-top:0;">💡 Supaya suara Boti tidak berhenti</h3>
+                    <ol style="padding-left:24px; margin:0;">
+                        <li style="margin-bottom:6px;">🔌 <strong>Colok charger</strong> kalau bisa.</li>
+                        <li style="margin-bottom:6px;">👆 <strong>Sentuh layar sesekali</strong> supaya layar tidak mati.</li>
+                        <li>🔊 <strong>Ketuk tombol di bagian atas layar</strong> kalau layar sempat mati. Boti meneruskan ceritanya.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- STAGE 1 -->
+            <div id="stage-1" class="stage-container active">
+                <div class="role-badge"><strong>👥 Pembagian Tugas Kelompok</strong><br>📖 Giliran tugas sekarang: <b>Pembaca</b>. Bacakan tulisan di layar dengan suara jelas untuk teman-temanmu.<div class="role-legend"><p style="margin:10px 0 4px"><strong>❓ Apa saja tugas tiap teman?</strong></p><ul><li>📖 <b>Pembaca</b>: membacakan tulisan di layar dengan suara jelas.</li><li>🖱️ <b>Pengoperasi</b>: memegang HP atau mouse dan mengetuk pilihan kelompok.</li><li>✏️ <b>Pencatat</b>: menulis hasil pengamatan dan jawaban kelompok.</li><li>🤝 <b>Pendamping</b>: memastikan semua teman paham dan ikut, tidak ada yang tertinggal.</li></ul><p>Tugas ini <b>bergilir</b> di setiap tahap, jadi semua teman dapat giliran. Tidak ada yang hanya menonton!</p></div></div>
+
+
+                <div class="card">
+                    <h3>🎯 Tujuan Detektif Hari Ini:</h3>
+                    <ul style="list-style:none; padding:0; display:flex; flex-direction:column; gap:12px;">
+                        <li style="display:flex; align-items:center; gap:12px; background:var(--bg); padding:12px; border-radius:8px;">
+                            <span style="font-size:1.6rem;">🔍</span> <span>Aku bisa mengamati kondisi lingkungan sekolahku.</span>
+                        </li>
+                        <li style="display:flex; align-items:center; gap:12px; background:var(--bg); padding:12px; border-radius:8px;">
+                            <span style="font-size:1.6rem;">⚖️</span> <span>Aku bisa mencoba tindakan lalu membandingkan hasilnya.</span>
+                        </li>
+                        <li style="display:flex; align-items:center; gap:12px; background:var(--bg); padding:12px; border-radius:8px;">
+                            <span style="font-size:1.6rem;">⭐</span> <span>Aku bisa memilih satu aksi nyata untuk menjaga bumi.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>1. Siapa nama panggilan kelompok/karaktermu?</h3>
+                    <input type="text" id="player-name" placeholder="Ketik nama panggilan di sini..." aria-label="Nama Panggilan">
+                    
+                    <h3 style="margin-top:20px;">2. Pilih Avatarmu:</h3>
+                    <div class="grid-3">
+                        <div class="avatar-select" onclick="selectAvatar('Anak Perempuan', this)">
+                            <span class="avatar-emoji" aria-hidden="true">👧</span>
+                            <span>Anak Perempuan</span>
+                        </div>
+                        <div class="avatar-select" onclick="selectAvatar('Anak Laki-laki', this)">
+                            <span class="avatar-emoji" aria-hidden="true">👦</span>
+                            <span>Anak Laki-laki</span>
+                        </div>
+                        <div class="avatar-select" onclick="selectAvatar('Pengguna Kursi Roda', this)">
+                            <span class="avatar-emoji" aria-hidden="true">🧑‍🦽</span>
+                            <span>Pengguna Kursi Roda</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="background-color: var(--secondary); color: white;">
+                    <h3 style="color:white;">💬 Pertanyaan Pemantik dari Boti si Robot:</h3>
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <span style="font-size:3rem;">🌧️</span>
+                        <p style="font-size:1.1rem; margin:0;">"Hai Detektif! Menurutmu, apa yang biasanya terjadi di sekolah kita saat hujan turun sangat deras berhari-hari?"</p>
+                    </div>
+                    <p style="font-size:0.85rem; margin-top:12px; opacity:0.9;">*Diskusikan bersama teman kelompokmu. Tidak ada jawaban yang salah!</p>
+                </div>
+            </div>
+
+            <!-- STAGE 2 -->
+            <div id="stage-2" class="stage-container">
+                <div class="role-badge"><strong>👥 Pembagian Tugas Kelompok</strong><br>🖱️ Giliran tugas sekarang: <b>Pengoperasi</b>. Kamu yang mengetuk titik di peta sesuai pilihan kelompok.<div class="role-legend"><p style="margin:10px 0 4px"><strong>❓ Apa saja tugas tiap teman?</strong></p><ul><li>📖 <b>Pembaca</b>: membacakan tulisan di layar dengan suara jelas.</li><li>🖱️ <b>Pengoperasi</b>: memegang HP atau mouse dan mengetuk pilihan kelompok.</li><li>✏️ <b>Pencatat</b>: menulis hasil pengamatan dan jawaban kelompok.</li><li>🤝 <b>Pendamping</b>: memastikan semua teman paham dan ikut, tidak ada yang tertinggal.</li></ul><p>Tugas ini <b>bergilir</b> di setiap tahap, jadi semua teman dapat giliran. Tidak ada yang hanya menonton!</p></div></div>
+
+                <div class="card">
+                    <h2>Peta Penyelidikan Sekolah 🗺️</h2>
+                    <p>Ketuk titik-titik di peta untuk menyelidiki masalahnya!</p>
+                    
+                    <div class="map-container" data-read="Peta sekolah punya lima titik: satu, selokan. Dua, lahan kosong. Tiga, lampu dan gorden. Empat, jendela kelas. Lima, tempat sampah. Ketuk salah satu titik untuk mulai menyelidiki.">
+                        <svg class="map-art" viewBox="0 0 400 420" role="img" aria-label="Ilustrasi sekolah: gedung kelas dengan dua jendela, lahan kosong di kanan, tempat sampah di kiri, dan selokan di depan" focusable="false">
+                            <defs>
+                                <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fcff2"/><stop offset="1" stop-color="#e3f6fc"/></linearGradient>
+                                <linearGradient id="gGrass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a5e6a8"/><stop offset="1" stop-color="#78c985"/></linearGradient>
+                            </defs>
+                            <rect width="400" height="420" fill="url(#gSky)"/>
+                            <!-- matahari, awan, burung -->
+                            <circle cx="45" cy="40" r="32" fill="#ffe27a" opacity=".35"/><circle cx="45" cy="40" r="20" fill="#ffd54a"/>
+                            <g stroke="#ffd54a" stroke-width="3" stroke-linecap="round"><line x1="71" y1="40" x2="79" y2="40"/><line x1="63" y1="58" x2="69" y2="64"/><line x1="45" y1="66" x2="45" y2="74"/><line x1="27" y1="58" x2="21" y2="64"/><line x1="19" y1="40" x2="11" y2="40"/><line x1="27" y1="22" x2="21" y2="16"/><line x1="45" y1="14" x2="45" y2="6"/><line x1="63" y1="22" x2="69" y2="16"/></g>
+                            <g class="a-cloud" fill="#fff"><ellipse cx="310" cy="38" rx="34" ry="12"/><ellipse cx="332" cy="29" rx="20" ry="11"/><ellipse cx="150" cy="74" rx="26" ry="9" opacity=".85"/><ellipse cx="166" cy="68" rx="14" ry="8" opacity=".85"/></g>
+                            <g class="a-bird" fill="none" stroke="#35505a" stroke-width="2" stroke-linecap="round"><path class="a-wing" d="M110 40q6-6 12 0q6-6 12 0"/><path class="a-wing d2" d="M135 56q5-5 10 0q5-5 10 0"/></g>
+                            <!-- bukit dan pohon jauh -->
+                            <path d="M0 108Q60 80 130 102T260 98T400 102V112H0z" fill="#6fbf7a"/>
+                            <path d="M0 110Q90 92 180 108T400 106V114H0z" fill="#86d08f"/>
+                            <g fill="#4aa860"><circle cx="18" cy="98" r="9"/><circle cx="34" cy="102" r="7"/><circle cx="372" cy="96" r="9"/><circle cx="388" cy="101" r="7"/></g>
+                            <rect y="108" width="400" height="312" fill="url(#gGrass)"/>
+                            <!-- jalan menuju pintu -->
+                            <path d="M186 190h28l8 108h-44z" fill="#d6d3cb"/><path d="M186 190l-8 108M214 190l8 108" stroke="#b9b5aa" stroke-width="2"/><g fill="#efece3"><rect x="196" y="214" width="8" height="14" rx="2"/><rect x="195" y="248" width="10" height="14" rx="2"/><rect x="194" y="280" width="12" height="12" rx="2"/></g>
+                            <!-- gedung kelas -->
+                            <rect x="110" y="88" width="180" height="102" fill="#ffe08a" stroke="#0b7a75" stroke-width="3"/>
+                            <rect x="112" y="176" width="176" height="12" fill="#f2c94c"/>
+                            <polygon points="98,90 200,52 302,90" fill="#0b7a75"/>
+                            <g stroke="#075e5a" stroke-width="2" opacity=".6"><line x1="173" y1="62" x2="227" y2="62"/><line x1="146" y1="72" x2="254" y2="72"/><line x1="120" y1="82" x2="280" y2="82"/></g>
+                            <rect x="96" y="88" width="208" height="6" rx="2" fill="#075e5a"/>
+                            <line x1="200" y1="52" x2="200" y2="18" stroke="#6d4c41" stroke-width="3"/><rect class="a-flag" x="201" y="18" width="26" height="8" fill="#e53935"/><rect class="a-flag" x="201" y="26" width="26" height="8" fill="#fff" stroke="#c9c9c9" stroke-width="1"/>
+                            <rect x="187" y="110" width="26" height="18" rx="3" fill="#fff" stroke="#0b7a75" stroke-width="2"/><text x="200" y="123" font-size="11" font-weight="bold" fill="#0b7a75" text-anchor="middle">SD</text>
+                            <rect x="186" y="145" width="28" height="45" rx="3" fill="#8a5a2b"/><rect x="191" y="150" width="18" height="14" rx="2" fill="#cdeffb"/><circle cx="208" cy="172" r="2.5" fill="#ffd54a"/>
+                            <rect x="180" y="190" width="40" height="4" fill="#cfcac0"/>
+                            <rect x="130" y="110" width="50" height="40" fill="#cdeffb" stroke="#0b7a75" stroke-width="3"/><rect x="220" y="110" width="50" height="40" fill="#cdeffb" stroke="#0b7a75" stroke-width="3"/>
+                            <rect x="126" y="150" width="58" height="5" rx="2" fill="#e0b43a"/><rect x="216" y="150" width="58" height="5" rx="2" fill="#e0b43a"/>
+                            <g fill="#43a047"><ellipse cx="118" cy="186" rx="14" ry="9"/><ellipse cx="282" cy="186" rx="14" ry="9"/></g>
+                            <!-- garis penghubung angka -> gambar -->
+                            <g stroke="#0b7a75" stroke-width="2.5" stroke-dasharray="5 4"><line x1="155" y1="198" x2="155" y2="157"/><line x1="245" y1="198" x2="245" y2="157"/><line x1="52" y1="198" x2="52" y2="182"/><line x1="348" y1="198" x2="348" y2="182"/><line x1="200" y1="338" x2="200" y2="330"/></g>
+                            <!-- Titik 3: gorden tertutup + lampu / gorden dibuka + cahaya -->
+                            <g id="ill-3-before"><rect x="132" y="112" width="23" height="36" fill="#f48fb1"/><rect x="155" y="112" width="23" height="36" fill="#f06292"/><g stroke="#c2185b" stroke-width="1.5" opacity=".6"><line x1="140" y1="112" x2="140" y2="148"/><line x1="148" y1="112" x2="148" y2="148"/><line x1="162" y1="112" x2="162" y2="148"/><line x1="170" y1="112" x2="170" y2="148"/></g><line x1="127" y1="111" x2="183" y2="111" stroke="#6d4c41" stroke-width="3"/><text x="155" y="136" font-size="20" text-anchor="middle">💡</text></g>
+                            <g id="ill-3-after" style="display:none"><rect x="132" y="112" width="9" height="36" fill="#f48fb1"/><rect x="169" y="112" width="9" height="36" fill="#f06292"/><rect x="141" y="112" width="28" height="36" fill="#fff3b0" opacity=".7"/><line x1="127" y1="111" x2="183" y2="111" stroke="#6d4c41" stroke-width="3"/><text x="155" y="138" font-size="20" text-anchor="middle">☀️</text></g>
+                            <!-- Titik 4: jendela tertutup gerah / terbuka berangin -->
+                            <g id="ill-4-before"><line x1="245" y1="110" x2="245" y2="150" stroke="#0b7a75" stroke-width="3"/><line x1="220" y1="130" x2="270" y2="130" stroke="#0b7a75" stroke-width="2"/><text x="245" y="141" font-size="20" text-anchor="middle">🥵</text></g>
+                            <g id="ill-4-after" style="display:none"><polygon points="220,110 232,116 232,144 220,150" fill="#9ed8ef" stroke="#0b7a75" stroke-width="2"/><polygon points="270,110 258,116 258,144 270,150" fill="#9ed8ef" stroke="#0b7a75" stroke-width="2"/><g fill="none" stroke="#6ab7d6" stroke-width="2" stroke-linecap="round"><path d="M236 122q5-4 10 0t10 0"/><path d="M236 145q5-4 10 0t10 0"/></g><text x="245" y="138" font-size="20" text-anchor="middle">🌬️</text></g>
+                            <!-- Titik 2: lahan gersang / ditanami -->
+                            <rect x="310" y="108" width="78" height="72" rx="8" fill="#d9b982"/>
+                            <g id="ill-2-before"><g fill="#c9a76b"><ellipse cx="330" cy="164" rx="10" ry="5"/><ellipse cx="372" cy="128" rx="9" ry="4"/></g><g stroke="#8a6d3b" stroke-width="2" fill="none" stroke-linecap="round"><path d="M320 122l12 10-6 12 14 8M368 126l-10 14 12 8-8 14M345 162l6-10"/></g><g stroke="#b59b4a" stroke-width="2" fill="none" stroke-linecap="round"><path d="M318 176l2-8m3 8l-1-6m22 6l2-8m6 8l-2-7"/></g><circle cx="378" cy="168" r="4" fill="#9e9e9e"/><g fill="none" stroke="#ff8a65" stroke-width="2" stroke-linecap="round" opacity=".8"><path d="M322 104q4-5 8 0t8 0t8 0"/><path d="M350 99q4-5 8 0t8 0t8 0"/></g></g>
+                            <g id="ill-2-after" style="display:none"><rect x="310" y="108" width="78" height="72" rx="8" fill="#8fd694"/><rect x="326" y="146" width="6" height="22" fill="#8a5a2b"/><circle cx="329" cy="136" r="15" fill="#2e9e5b"/><circle cx="321" cy="142" r="9" fill="#43a047"/><rect x="368" y="146" width="6" height="22" fill="#8a5a2b"/><circle cx="371" cy="136" r="15" fill="#2e9e5b"/><circle cx="379" cy="142" r="9" fill="#43a047"/><g><circle cx="318" cy="172" r="3" fill="#f06292"/><circle cx="346" cy="174" r="3" fill="#fff"/><circle cx="356" cy="170" r="3" fill="#ffd54a"/></g></g>
+                            <!-- Titik 5: sampah tercampur / dipilah -->
+                            <g id="ill-5-before"><path d="M36 140h32l-3 36H39z" fill="#9aa0a6" stroke="#6b7075" stroke-width="2"/><rect x="33" y="134" width="38" height="7" rx="3" fill="#7d8388" transform="rotate(-10 52 137)"/><g><circle cx="42" cy="136" r="6" fill="#e57373"/><circle cx="55" cy="132" r="6" fill="#ffd54a"/><circle cx="64" cy="137" r="5" fill="#64b5f6"/></g><text class="a-smell" x="52" y="124" font-size="14" text-anchor="middle">💨</text><circle cx="26" cy="176" r="4" fill="#e57373"/><circle cx="78" cy="174" r="4" fill="#64b5f6"/></g>
+                            <g id="ill-5-after" style="display:none"><path d="M24 140h24l-2 36H26z" fill="#2e9e5b" stroke="#1b6e3b" stroke-width="2"/><rect x="21" y="134" width="30" height="7" rx="3" fill="#1b6e3b"/><path d="M54 140h24l-2 36H56z" fill="#1e88e5" stroke="#0d5aa7" stroke-width="2"/><rect x="51" y="134" width="30" height="7" rx="3" fill="#0d5aa7"/><text x="36" y="164" font-size="13" text-anchor="middle">🍃</text><text x="66" y="164" font-size="13" text-anchor="middle">🧴</text><text x="51" y="124" font-size="14" text-anchor="middle">♻️</text></g>
+                            <!-- Titik 1: selokan -->
+                            <rect x="6" y="294" width="388" height="34" rx="3" fill="#cfcac0" stroke="#9e998e" stroke-width="2"/><rect x="12" y="300" width="376" height="22" fill="#8b7355"/>
+                            <g id="ill-1-before" class="a-float"><rect x="96" y="304" width="24" height="9" rx="3" fill="#90caf9" stroke="#1565c0" stroke-width="1.5" transform="rotate(-12 108 308)"/><ellipse cx="160" cy="311" rx="14" ry="7" fill="#fff" stroke="#bbb"/><ellipse cx="62" cy="312" rx="12" ry="5" fill="#7aa35c" transform="rotate(15 62 312)"/><ellipse cx="236" cy="310" rx="12" ry="5" fill="#7aa35c" transform="rotate(-20 236 310)"/><rect x="290" y="305" width="10" height="14" rx="2" fill="#b0b5ba" stroke="#6b7075"/><ellipse cx="350" cy="312" rx="16" ry="6" fill="#6b6b6b"/></g>
+                            <g id="ill-1-after" style="display:none"><rect x="12" y="300" width="376" height="22" fill="#5fb7ea"/><path d="M12 311q9-6 18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/><g class="a-flow" fill="#fff"><path d="M60 303l9 4-9 4z"/><path d="M150 313l9 4-9 4z" transform="translate(0 -4)"/><path d="M260 303l9 4-9 4z"/><path d="M340 313l9 4-9 4z" transform="translate(0 -4)"/></g><text class="a-smell" x="196" y="316" font-size="12">✨</text></g>
+                            <!-- hiasan halaman -->
+                            <g><rect x="56" y="372" width="8" height="30" fill="#8a5a2b"/><g class="a-tree"><circle cx="60" cy="362" r="20" fill="#2e9e5b"/><circle cx="46" cy="372" r="13" fill="#43a047"/><circle cx="74" cy="372" r="13" fill="#43a047"/></g>
+                            <g class="a-sway"><path d="M290 376v14" stroke="#3f8f4a" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="290" cy="372" r="5" fill="#f06292"/></g><g class="a-sway d2"><path d="M310 372v18" stroke="#3f8f4a" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="310" cy="368" r="5" fill="#ffd54a"/></g><g class="a-sway d3"><path d="M330 378v12" stroke="#3f8f4a" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="330" cy="374" r="5" fill="#fff" stroke="#ddd"/></g><g class="a-sway d4"><path d="M350 374v16" stroke="#3f8f4a" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="350" cy="370" r="5" fill="#ba68c8"/></g><g class="a-fly"><text class="a-flap" x="372" y="362" font-size="16">🦋</text></g>
+                            <g stroke="#5aa860" stroke-width="2" fill="none" stroke-linecap="round"><path class="a-sway" d="M104 404l3-8 3 8m0 0l3-10 3 10"/><path class="a-sway" d="M270 406l3-8 3 8m0 0l3-10 3 10"/><path class="a-sway" d="M12 232l3-8 3 8m0 0l3-10 3 10"/><path class="a-sway" d="M376 236l3-8 3 8m0 0l3-10 3 10"/></g></g>
+                            <!-- keterangan: di bawah angka -->
+                            <g font-size="12" font-weight="bold" fill="#123" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle"><text x="155" y="272">Lampu &amp;</text><text x="155" y="286">gorden</text><text x="245" y="272">Jendela</text><text x="245" y="286">kelas</text><text x="52" y="272">Tempat</text><text x="52" y="286">sampah</text><text x="348" y="272">Lahan</text><text x="348" y="286">kosong</text><text x="200" y="412">Selokan</text></g>
+                        </svg>
+                        <div id="map-spots-container"></div>
+                    </div>
+                </div>
+
+                <!-- Spot Detail Dialog -->
+                <div id="spot-detail" class="card" style="display:none; border-color:var(--secondary);">
+                    <h3 id="spot-title">Nama Titik</h3>
+                    <p><strong>Masalah:</strong> <span id="spot-issue"></span></p>
+                    
+                    <h4>🛠️ Pilih Tindakanmu:</h4>
+                    <div id="spot-actions" class="grid-2"></div>
+
+                    <div id="spot-pred-box" style="display:none; background:var(--bg); padding:14px; border-radius:8px; margin-top:16px;">
+                        <label id="spot-pred-label" for="spot-prediction" style="font-weight:bold; display:block; margin-bottom:6px;">🤔 Prediksi: apa yang akan terjadi?</label>
+                        <select id="spot-prediction" onchange="document.getElementById('btn-try').disabled = !this.value;">
+                            <option value="">-- Pilih Prediksimu --</option>
+                            <option value="Lingkungan membaik">Kondisi lingkungan akan membaik</option>
+                            <option value="Tidak ada perubahan">Tidak akan ada perubahan</option>
+                            <option value="Lingkungan memburuk">Kondisi lingkungan akan memburuk</option>
+                        </select>
+                        <button id="btn-try" class="btn-primary" style="margin-top:12px;" disabled onclick="runAction()">▶ Coba Tindakan Ini</button>
+                    </div>
+                </div>
+
+                <!-- Aha Moment Panel -->
+                <div id="aha-moment" class="card" style="display:none; background:#dcfce7; border-color:#22c55e;">
+                    <h3 style="color:#15803d;">💡 Momen "Aha!"</h3>
+                    <p id="aha-text" style="font-size:1.1rem; font-weight:bold;"></p>
+                    <p>Sekolah kita berubah menjadi lebih sejuk dan aman karena pilihan tepat yang kamu buat!</p>
+                    <button class="btn-primary" onclick="closeSpot()">Selesai Amati Titik Ini</button>
+                </div>
+
+                <!-- Data Board -->
+                <div id="data-board-card" class="card">
+                    <h3>📊 Papan Data Kelompok</h3>
+                    <p style="font-size:0.9rem;">Tabel terisi otomatis saat kamu menyelesaikan penyelidikan di peta.</p>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; text-align:left;" border="1">
+                            <thead>
+                                <tr style="background:var(--bg);">
+                                    <th style="padding:8px;">Titik Lokasi</th>
+                                    <th style="padding:8px;">Tindakan Dipilih</th>
+                                    <th style="padding:8px;">Hasil / Dampak</th>
+                                </tr>
+                            </thead>
+                            <tbody id="data-board-body">
+                                <tr><td colspan="3" style="padding:8px; text-align:center; color:#64748b;">Belum ada data penyelidikan.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            
+                <div class="card" id="quiz-2"></div>
+            </div>
+
+            <!-- STAGE 3 -->
+            <div id="stage-3" class="stage-container">
+                <div class="role-badge"><strong>👥 Pembagian Tugas Kelompok</strong><br>✏️ Giliran tugas sekarang: <b>Pencatat</b>. Tulis jawaban kelompok dan pastikan kartu dikelompokkan dengan benar.<div class="role-legend"><p style="margin:10px 0 4px"><strong>❓ Apa saja tugas tiap teman?</strong></p><ul><li>📖 <b>Pembaca</b>: membacakan tulisan di layar dengan suara jelas.</li><li>🖱️ <b>Pengoperasi</b>: memegang HP atau mouse dan mengetuk pilihan kelompok.</li><li>✏️ <b>Pencatat</b>: menulis hasil pengamatan dan jawaban kelompok.</li><li>🤝 <b>Pendamping</b>: memastikan semua teman paham dan ikut, tidak ada yang tertinggal.</li></ul><p>Tugas ini <b>bergilir</b> di setiap tahap, jadi semua teman dapat giliran. Tidak ada yang hanya menonton!</p></div></div>
+
+                <div class="card">
+                    <h2>Cuaca atau Iklim? ⛅🌍</h2>
+                    <div style="display:grid; gap:10px; margin-bottom:12px;">
+                        <p style="margin:0;">🌦️ <strong>Cuaca</strong> adalah kejadian di udara <strong>hari ini</strong> atau beberapa hari. Contoh: hujan deras siang ini, panas terik, atau besok cerah. Cuaca bisa cepat berubah.</p>
+                        <p style="margin:0;">🌍 <strong>Iklim</strong> adalah <strong>pola yang berulang selama bertahun-tahun</strong>. Contoh: setiap tahun ada musim hujan dan musim kemarau, atau hujan bulan Januari yang cenderung tinggi.</p>
+                    </div>
+                    
+                    <div style="background:var(--bg); padding:12px; border-radius:8px; font-size:0.9rem; margin-bottom:16px;">
+                        <span id="kearifan-box"><strong>🌾 Kalender Musim Lokal (Pranata Mangsa):</strong> Zaman dulu, petani dan nelayan membaca tanda-tanda alam untuk tahu kapan hujan datang. Polanya berulang setiap tahun, jadi itu adalah contoh <strong>Iklim</strong>!</span><br><small><em>📌 Catatan guru: ini hanya contoh. Verifikasi dengan sumber budaya setempat.</em></small>
+                    </div>
+
+                    <p style="margin:0 0 16px; background:#fff8dc; border-left:4px solid #f5a623; padding:8px 10px; border-radius:6px;">⚠️ <strong>Ingat:</strong> satu hari hujan deras belum tentu tanda perubahan iklim. Tetapi kalau pola jangka panjangnya berubah, itu bisa menjadi tanda. Jadi kita harus teliti.</p>
+
+                    <div class="grid-2" style="margin-top:16px;">
+                        <div class="sort-box" id="box-cuaca">
+                            <h3 style="color:var(--secondary); margin-bottom:8px;">Kotak Cuaca (Harian)</h3>
+                        </div>
+                        <div class="sort-box" id="box-iklim">
+                            <h3 style="color:var(--primary); margin-bottom:8px;">Kotak Iklim (Tahunan)</h3>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px;" id="cards-container">
+                        <h3>Pilih Kotak untuk Kartu di Bawah Ini:</h3>
+                    </div>
+                </div>
+            
+                <div class="card" id="quiz-3"></div>
+            </div>
+
+            <!-- STAGE 4 -->
+            <div id="stage-4" class="stage-container">
+                <div class="role-badge"><strong>👥 Pembagian Tugas Kelompok</strong><br>🤝 Giliran tugas sekarang: <b>Pendamping</b>. Pastikan semua teman ikut bersiap dan tidak ada yang tertinggal.<div class="role-legend"><p style="margin:10px 0 4px"><strong>❓ Apa saja tugas tiap teman?</strong></p><ul><li>📖 <b>Pembaca</b>: membacakan tulisan di layar dengan suara jelas.</li><li>🖱️ <b>Pengoperasi</b>: memegang HP atau mouse dan mengetuk pilihan kelompok.</li><li>✏️ <b>Pencatat</b>: menulis hasil pengamatan dan jawaban kelompok.</li><li>🤝 <b>Pendamping</b>: memastikan semua teman paham dan ikut, tidak ada yang tertinggal.</li></ul><p>Tugas ini <b>bergilir</b> di setiap tahap, jadi semua teman dapat giliran. Tidak ada yang hanya menonton!</p></div></div>
+
+                <div class="card text-center" style="background:#e0f2fe; text-align:center;">
+                    <h2>🌧️ Hari Hujan Deras Turun!</h2>
+                    <p>Mari lihat dampak penyelidikan kelompokmu di Tahap 2:</p>
+                    <div id="rain-result" style="font-size:1.1rem; font-weight:bold; color:var(--primary); padding:14px; background:white; border-radius:8px; display:inline-block;">
+                        Memeriksa kondisi sekolah...
+                    </div>
+                </div>
+
+                <div class="card" id="gerak-siaga" style="background:#fef3c7; border-color:#f59e0b;">
+                    <h3 style="color:#b45309;">🏃 Gerak Siaga 1 Menit (Inklusif)</h3>
+                    <p>Satu menit latihan bergerak tenang tanpa layar:</p>
+                    <ul style="padding-left:18px; font-size:0.95rem;">
+                        <li>Bagi yang berdiri: Berbaris rapi menuju titik kumpul.</li>
+                        <li>Bagi pengguna kursi roda: Bersiap di jalur landai (ramp).</li>
+                        <li>Bagi yang duduk: Lakukan peregangan tangan dan bernapas tenang bersama.</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>Urutkan Langkah Aman (SOP Sekolah)</h3>
+                    <p>Gunakan tombol Panah (⬆️ / ⬇️) untuk menyusun urutan langkah keselamatan bencana yang benar:</p>
+                    <div id="sop-container"></div>
+                    <button class="btn-primary" style="margin-top:16px;" onclick="checkSop()">Cek Urutanku!</button>
+                    <p id="sop-feedback" style="margin-top:12px; font-weight:bold;"></p>
+                </div>
+            
+                <div class="card" id="quiz-4"></div>
+            </div>
+
+            <!-- STAGE 5 -->
+            <div id="stage-5" class="stage-container">
+                <div class="role-badge"><strong>👥 Pembagian Tugas Kelompok</strong><br>🖱️📖 Giliran tugas sekarang: <b>Pengoperasi dan Pembaca</b>. Pembaca membacakan nama benda, Pengoperasi memilih jawabannya.<div class="role-legend"><p style="margin:10px 0 4px"><strong>❓ Apa saja tugas tiap teman?</strong></p><ul><li>📖 <b>Pembaca</b>: membacakan tulisan di layar dengan suara jelas.</li><li>🖱️ <b>Pengoperasi</b>: memegang HP atau mouse dan mengetuk pilihan kelompok.</li><li>✏️ <b>Pencatat</b>: menulis hasil pengamatan dan jawaban kelompok.</li><li>🤝 <b>Pendamping</b>: memastikan semua teman paham dan ikut, tidak ada yang tertinggal.</li></ul><p>Tugas ini <b>bergilir</b> di setiap tahap, jadi semua teman dapat giliran. Tidak ada yang hanya menonton!</p></div></div>
+
+                <div class="card">
+                    <h2>🤖 Latih Robot Boti Memilah Benda</h2>
+                    <p>Boti adalah Kecerdasan Artifisial (KA) sederhana. Ia belajar dari contoh yang kamu berikan.</p>
+                    
+                    <div style="background:var(--bg); padding:16px; border-radius:8px; margin-bottom:16px;">
+                        <h3 id="boti-item-name" style="color:var(--secondary); text-align:center; font-size:1.4rem;">Memuat benda...</h3>
+                        <p id="boti-question" style="text-align:center;">Menurutmu, benda ini tergolong jenis apa?</p>
+                        <div id="boti-choices" class="grid-2" style="max-width:420px; margin:0 auto;">
+                            <button class="btn-outline" onclick="trainBoti('Organik')">Mudah Membusuk (Organik)</button>
+                            <button class="btn-outline" onclick="trainBoti('Anorganik')">Sulit Membusuk (Anorganik)</button>
+                        </div>
+                    </div>
+
+                    <div id="boti-feedback" style="text-align:center; font-weight:bold; min-height:50px;"></div>
+                    
+                    <div style="margin-top:16px; font-size:0.85rem; padding:12px; background:#fffbebe6; border-left:4px solid var(--accent);">
+                        💡 <strong>Prinsip Penting:</strong> Manusia tetap harus mengawasi hasil kerja robot karena KA dibuat untuk membantu manusia, bukan menggantikannya. KA juga tidak punya perasaan atau intuisi seperti manusia; ia hanya bekerja dari pola contoh yang diberikan.
+                    </div>
+                    <div id="ai-compare" style="margin-top:16px; padding:14px; background:#eef8ff; border-radius:10px; border-left:4px solid var(--secondary);">
+                        <h3 style="margin-top:0;">🔍 Apa bedanya?</h3>
+                        <p style="margin:0 0 8px;">🔌 <strong>Lampu biasa</strong> hanya menyala atau padam saat dipencet. Ia tidak belajar apa pun. Itu <strong>mesin non-cerdas</strong>.</p>
+                        <p style="margin:0 0 8px;">🤖 <strong>Boti</strong> berubah dan makin pintar dari contoh yang kamu berikan. Itu <strong>mesin cerdas sederhana</strong>.</p>
+                        <p style="margin:0 0 8px;">👀 <strong>Manusia</strong> mengenali benda dengan melihat, meraba, mencium, dan mengingat pengalaman.</p>
+                        <p style="margin:0 0 8px;">💻 <strong>Komputer</strong> mengenali benda dari ciri-ciri yang dihitung dari contoh. Karena itu contohnya harus <strong>beragam</strong> supaya hasilnya adil.</p>
+                    </div>
+                </div>
+            
+                <div class="card" id="quiz-5"></div>
+            </div>
+
+            <!-- STAGE 6 -->
+            <div id="stage-6" class="stage-container">
+                <div class="role-badge"><strong>👥 Pembagian Tugas Kelompok</strong><br>🌟 Giliran tugas sekarang: <b>Semua Anggota</b>. Kita bekerja bersama membuat Kartu Misi Nyata.<div class="role-legend"><p style="margin:10px 0 4px"><strong>❓ Apa saja tugas tiap teman?</strong></p><ul><li>📖 <b>Pembaca</b>: membacakan tulisan di layar dengan suara jelas.</li><li>🖱️ <b>Pengoperasi</b>: memegang HP atau mouse dan mengetuk pilihan kelompok.</li><li>✏️ <b>Pencatat</b>: menulis hasil pengamatan dan jawaban kelompok.</li><li>🤝 <b>Pendamping</b>: memastikan semua teman paham dan ikut, tidak ada yang tertinggal.</li></ul><p>Tugas ini <b>bergilir</b> di setiap tahap, jadi semua teman dapat giliran. Tidak ada yang hanya menonton!</p></div></div>
+
+                <!-- Reflection Form -->
+                <div class="card no-print">
+                    <h2>Refleksi Akhir Detektif 🌟</h2>
+                    <div class="grid-2">
+                        <div>
+                            <label style="font-weight:bold; display:block; margin-bottom:6px;">Bagian mana yang paling seru?</label>
+                            <select onchange="playSfx('click')">
+                                <option>Menyelidiki Peta Sekolah</option>
+                                <option>Mengelompokkan Cuaca & Iklim</option>
+                                <option>Melatih Robot Boti</option>
+                                <option>Latihan Gerak Siaga</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-weight:bold; display:block; margin-bottom:6px;">Cara apa yang membantuku belajar?</label>
+                            <select onchange="playSfx('click')">
+                                <option>Melihat gambar & peta</option>
+                                <option>Mendengarkan suara narasi</option>
+                                <option>Bekerja sama dengan teman</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="text-align:center; margin-top:16px;">
+                        <button class="btn-primary" style="font-size:1.1rem;" onclick="playSfx('correct'); notify('Tos semangat! Kerja kelompok kalian luar biasa!');">✋ Tos Semangat Kelompok!</button>
+                    </div>
+                </div>
+
+                <!-- Real Mission Selection Controls -->
+                <div class="card no-print">
+                    <h2>Pilih Misi Nyatamu! 🚀</h2>
+                    <p>Pilih SATU tindakan nyata dan lengkapi rincian di bawah ini:</p>
+                    
+                    <label style="font-weight:bold; display:block; margin-bottom:8px;">1. Pilih Aksi Nyata:</label>
+                    <div class="grid-2" style="margin-bottom:16px;">
+                        <button class="btn-outline mission-act-btn" onclick="setMissionAction('Membersihkan Selokan Kelas bersama Teman', this)">Membersihkan Selokan</button>
+                        <button class="btn-outline mission-act-btn" onclick="setMissionAction('Mematikan Lampu saat Keluar Kelas', this)">Mematikan Lampu</button>
+                        <button class="btn-outline mission-act-btn" onclick="setMissionAction('Memilah Sampah Organik & Anorganik', this)">Memilah Sampah</button>
+                        <button class="btn-outline mission-act-btn" onclick="setMissionAction('Membuka Ventilasi & Mengurangi Kipas', this)">Membuka Ventilasi</button>
+                    </div>
+
+                    <label style="font-weight:bold; display:block; margin-bottom:6px;">2. Alasan Memilih Aksi Ini (Satu Kalimat):</label>
+                    <input type="text" id="mission-reason-input" placeholder="Contoh: Supaya lingkungan kelas sejuk dan bebas sarang nyamuk..." oninput="updateCardPreview()">
+
+                    <div class="grid-2" style="margin-top:12px;">
+                        <div>
+                            <label style="font-weight:bold; display:block; margin-bottom:6px;">3. Waktu Pelaksanaan:</label>
+                            <select id="mission-time-select" onchange="updateCardPreview()">
+                                <option value="Setiap Pagi Sebelum Bel">Setiap Pagi Sebelum Bel</option>
+                                <option value="Saat Jam Istirahat">Saat Jam Istirahat</option>
+                                <option value="Saat Pulang Sekolah">Saat Pulang Sekolah</option>
+                                <option value="Setiap Hari Jumat">Setiap Hari Jumat</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-weight:bold; display:block; margin-bottom:6px;">4. Mitra Misi (Siapa yang Membantu?):</label>
+                            <select id="mission-partner-select" onchange="updateCardPreview()">
+                                <option value="Teman Sekelas">Teman Sekelas</option>
+                                <option value="Bapak/Ibu Guru">Bapak/Ibu Guru</option>
+                                <option value="Penjaga Sekolah">Penjaga Sekolah</option>
+                                <option value="Orang Tua di Rumah">Orang Tua di Rumah</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:16px; background:var(--bg); padding:14px; border-radius:8px;">
+                        <label style="font-weight:bold; display:block; margin-bottom:8px;">5. Stiker Apresiasi Kelompok Lain:</label>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn-secondary" style="font-size:0.85rem; padding:8px 12px;" onclick="setSticker('💡 Idenya Sangat Cemerlang!')">💡 Idenya Cemerlang!</button>
+                            <button class="btn-secondary" style="font-size:0.85rem; padding:8px 12px;" onclick="setSticker('🌱 Mudah Dilakukan Bersama!')">🌱 Mudah Dilakukan!</button>
+                            <button class="btn-secondary" style="font-size:0.85rem; padding:8px 12px;" onclick="setSticker('⭐ Sangat Bermanfaat!')">⭐ Bermanfaat!</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LIVE PREVIEW CARD (Target Area for Printing & Download) -->
+                <div id="printable-mission-card" class="card" style="border: 4px solid var(--primary); background:#ffffff;">
+                    <div style="text-align:center; border-bottom:2px dashed var(--border); padding-bottom:12px; margin-bottom:14px;">
+                        <h2 style="color:var(--primary); margin:0;">📜 KARTU MISI NYATA DETEKTIF IKLIM</h2>
+                        <p style="margin:4px 0 0 0; font-size:0.9rem; font-weight:bold; color:var(--text);"><span id="card-ta">Tahun Ajaran 2026/2027</span> • Laporan Misi Sekolah</p>
+                    </div>
+                    
+                    <p style="margin-bottom:8px;"><strong>Nama Penyelidik:</strong> <span id="card-preview-name" style="color:var(--secondary); font-weight:bold;">-</span></p>
+                    <p id="card-school-line" style="display:none; margin:0 0 8px;"><strong>Sekolah:</strong> <span id="card-preview-school"></span></p>
+                    
+                    <div style="background:var(--bg); padding:14px; border-radius:8px; margin:12px 0; border:1px solid var(--border);">
+                        <p style="margin-top:0; margin-bottom:4px; font-weight:bold; font-size:0.9rem; color:#64748b;">AKSI NYATA YANG DIPILIH:</p>
+                        <p id="card-preview-action" style="font-size:1.15rem; color:var(--primary); font-weight:bold; margin:0;">(Belum memilih aksi)</p>
+                    </div>
+
+                    <p style="margin-bottom:6px;"><strong>Alasanku:</strong></p>
+                    <p id="card-preview-reason" style="font-style:italic; background:#fff; padding:8px; border-radius:6px; border:1px dashed var(--border); margin-top:0;">(Belum mengisi alasan)</p>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; padding-top:10px; border-top:1px solid var(--border);">
+                        <div>
+                            <p style="margin:0; font-size:0.85rem; color:#64748b;">WAKTU PELAKSANAAN:</p>
+                            <p id="card-preview-time" style="margin:2px 0 0 0; font-weight:bold;">-</p>
+                            
+                            <p style="margin:8px 0 0 0; font-size:0.85rem; color:#64748b;">MITRA MISI:</p>
+                            <p id="card-preview-partner" style="margin:2px 0 0 0; font-weight:bold;">-</p>
+                        </div>
+                        <div style="border-left:2px dashed var(--border); padding-left:12px;">
+                            <p style="margin:0; font-size:0.85rem; color:#64748b;">STIKER APRESIASI TEMAN:</p>
+                            <p id="card-preview-sticker" style="margin:4px 0 0 0; font-weight:bold; color:var(--accent); font-size:1.05rem;">(Belum ada stiker)</p>
+                        </div>
+                    </div>
+
+                    <div id="card-missing-warning" style="margin-top:14px; padding:10px; background:#fffbebe6; color:#b45309; font-size:0.85rem; border-radius:8px; text-align:center;" class="no-print">
+                        💡 Catatan: Silakan pilih Aksi Nyata dan tuliskan Alasanmu agar kartumu lengkap!
+                    </div>
+
+                    <div class="no-print" style="margin-top:12px; padding:8px; background:#f1f5f9; color:#475569; font-size:0.8rem; text-align:center; border-radius:6px;">
+                        🔒 <strong>Privasi Aman:</strong> Bebas data pribadi. Aman untuk dicetak dan dibagikan.
+                    </div>
+                </div>
+
+                <!-- Export & Print Action Buttons -->
+                <div class="no-print" style="display:flex; flex-direction:column; gap:10px; margin-top:16px;">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="btn-primary" style="flex:1; min-width:180px;" onclick="triggerPrint()">🖨️ Cetak / Simpan PDF</button>
+                        <button class="btn-secondary" style="flex:1; min-width:180px;" onclick="downloadCardBlob()">📥 Unduh Kartu (File HTML)</button>
+                        <button class="btn-outline" style="flex:1; min-width:180px;" onclick="copyCardText()">📋 Salin Teks Kartu</button>
+                    </div>
+                    
+                    <p style="font-size:0.85rem; color:#64748b; margin:4px 0 0 0; text-align:center;">
+                        📱 <strong>Tip untuk HP/Tablet:</strong> Cara termudah adalah mengambil <strong>Tangkapan Layar (Screenshot)</strong> pada Pratinjau Kartu di atas!
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Bottom Navigation -->
+            <div class="bottom-nav no-print">
+                <button class="btn-outline" id="btn-prev" onclick="changeStage(-1)">⬅️ Kembali</button>
+                <button class="btn-primary" id="btn-next" onclick="changeStage(1)">Lanjut Tahap Berikutnya ➡️</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        /* ==============================
+           1. SKENARIO CONFIGURATION
+        ============================== */
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.avatar-select').forEach(el => {
+                el.setAttribute('role', 'button'); el.setAttribute('tabindex', '0'); el.setAttribute('aria-pressed', 'false');
+                el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } });
+            });
+        });
+        const SKENARIO = {
+            mapSpots: [
+                { id: 1, x: 50, y: 87, name: "Selokan Sekolah", issue: "Penuh sampah plastik & dedaunan", actions: ["Bersihkan Bersama", "Biarkan Saja", "Tutup Semen"], correctAction: 0, effects: ["Lingkungan membaik", "Tidak ada perubahan", "Lingkungan memburuk"], aha: "Air mengalir lancar, tidak ada genangan saat hujan!" },
+                { id: 2, x: 87, y: 54, name: "Lahan Kosong", issue: "Gersang, berdebu, dan panas", actions: ["Biarkan", "Tanam Pohon & Rumput", "Cor Semen"], correctAction: 1, effects: ["Tidak ada perubahan", "Lingkungan membaik", "Lingkungan memburuk"], aha: "Halaman jadi sejuk dan menyerap air hujan." },
+                { id: 3, x: 39, y: 54, name: "Ruang Kelas", issue: "Lampu menyala siang hari, gorden tertutup", actions: ["Biarkan", "Tambah Lampu", "Buka Gorden & Matikan Lampu"], correctAction: 2, effects: ["Tidak ada perubahan", "Lingkungan memburuk", "Lingkungan membaik"], aha: "Cahaya alami menghemat energi listrik!" },
+                { id: 4, x: 61, y: 54, name: "Jendela Kelas", issue: "Gerah, jendela tertutup rapat", actions: ["Buka Jendela Lebar", "Nyalakan AC Terus", "Tutup Rapat"], correctAction: 0, effects: ["Lingkungan membaik", "Lingkungan memburuk", "Tidak ada perubahan"], aha: "Angin segar masuk, sirkulasi udara sehat." },
+                { id: 5, x: 13, y: 54, name: "Tempat Sampah", issue: "Semua jenis sampah tercampur", actions: ["Bakar Semua", "Pisahkan Organik & Anorganik", "Buang ke Sungai"], correctAction: 1, effects: ["Lingkungan memburuk", "Lingkungan membaik", "Lingkungan memburuk"], aha: "Sampah organik bisa jadi pupuk tanaman!" }
+            ],
+            cuacaIklim: [
+                { id: 1, text: "Hari ini hujan sangat deras", type: "CUACA" },
+                { id: 2, text: "Siang ini udara terik menyengat", type: "CUACA" },
+                { id: 3, text: "Besok diperkirakan cerah berawan", type: "CUACA" },
+                { id: 4, text: "Di Indonesia ada musim hujan dan kemarau tahunan", type: "IKLIM" },
+                { id: 5, text: "Curah hujan bulan Januari selama bertahun-tahun tinggi", type: "IKLIM" }
+            ],
+            sopBencana: [
+                "Dengarkan instruksi dan arahan dari Guru.",
+                "Rapikan dan bawa barang yang paling penting saja.",
+                "Bantu teman yang membutuhkan bantuan fisik.",
+                "Berjalan tenang menuju titik kumpul lewat jalur aman.",
+                "Berkumpul, berhitung, dan pastikan teman lengkap."
+            ],
+            botiItems: [
+                { name: "Botol Plastik Air Mineral", type: "Anorganik" },
+                { name: "Kulit Pisang Sisa Bekal", type: "Organik" },
+                { name: "Daun Kering Jatuh", type: "Organik" },
+                { name: "Kaleng Minuman Bekas", type: "Anorganik" },
+                { name: "Kertas Tisu Basah", type: "Ambigu" }
+            ]
+        };
+
+        /* ==============================
+           2. APPLICATION STATE
+        ============================== */
+        const AppState = {
+            currentStage: 1,
+            totalStages: 6,
+            playerName: "",
+            avatar: "",
+            soundEnabled: true,
+            musicEnabled: true,
+            volumeBoost: 3.5,
+            mapProgress: 0,
+            sopCards: [],
+            botiIndex: 0,
+            missionAction: "",
+            missionSticker: ""
+        };
+
+        /* ==============================
+           3. WEB AUDIO & SYNTH SYSTEM
+        ============================== */
+        const AudioSys = {
+            ctx: null,
+            compressor: null,
+            masterGain: null,
+            bgmGain: null,
+            bgmInterval: null,
+            bgmBus: null,
+            synth: window.speechSynthesis,
+
+            init() {
+                if (this.ctx) return;
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioCtx();
+
+                    this.compressor = this.ctx.createDynamicsCompressor();
+                    this.compressor.threshold.value = -12;
+                    this.compressor.ratio.value = 12;
+
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.gain.value = AppState.volumeBoost;
+
+                    this.bgmGain = this.ctx.createGain();
+                    this.bgmGain.gain.value = 0.15; // Low pleasant BGM volume
+
+                    this.bgmGain.connect(this.masterGain);
+                    this.masterGain.connect(this.compressor);
+                    this.compressor.connect(this.ctx.destination);
+                } catch (e) {
+                    console.warn("Web Audio API not supported");
+                }
+            },
+
+            playTone(freq, type, duration) {
+                if (!AppState.soundEnabled || !this.ctx) return;
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                this._note(freq, type, this.ctx.currentTime, duration, 0.2, this.masterGain, 0.01);
+            },
+
+            /* Satu nada dengan envelope lembut (attack-decay), dipakai musik dan efek */
+            _note(f, type, t, dur, vol, dest, att = 0.02) {
+                const c = this.ctx, o = c.createOscillator(), g = c.createGain();
+                o.type = type; o.frequency.value = f;
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.linearRampToValueAtTime(vol, t + att);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+                o.connect(g); g.connect(dest);
+                o.start(t); o.stop(t + dur + 0.05);
+            },
+
+            /* Bus musik dengan gema lembut (delay + feedback) agar terdengar luas */
+            _bus() {
+                if (this.bgmBus) return;
+                const c = this.ctx;
+                this.bgmBus = c.createGain();
+                const d = c.createDelay(1), fb = c.createGain(), lp = c.createBiquadFilter();
+                d.delayTime.value = 0.36; fb.gain.value = 0.32; lp.type = 'lowpass'; lp.frequency.value = 1600;
+                this.bgmBus.connect(this.bgmGain);
+                this.bgmBus.connect(d); d.connect(lp); lp.connect(fb); fb.connect(d); lp.connect(this.bgmGain);
+            },
+
+            /* Musik latar: 4 akord (C - Am - F - G), tempo pelan 84 BPM, berulang tanpa putus */
+            startBgm() {
+                if (!AppState.musicEnabled) return;
+                this.init();
+                if (!this.ctx) return;
+                this.stopBgm();
+                this._bus();
+                this.bgmGain.gain.value = 0.9;
+                const c = this.ctx, spb = 60 / 84;
+                const chords = [[261.63, 329.63, 392], [220, 261.63, 329.63], [174.61, 220, 261.63], [196, 246.94, 293.66]];
+                const bass = [130.81, 110, 87.31, 98];
+                const arp = [0, 1, 2, 1, 2, 1, 0, 1];
+                let bar = 0, nextT = c.currentTime + 0.1;
+                const sched = () => {
+                    if (!AppState.musicEnabled) return;
+                    if (c.state === 'suspended') c.resume();
+                    while (nextT < c.currentTime + 1.5) {
+                        const ch = chords[bar % 4];
+                        ch.forEach(f => this._note(f, 'sine', nextT, spb * 4, 0.05, this.bgmBus, 0.5));
+                        this._note(bass[bar % 4], 'triangle', nextT, spb * 2, 0.1, this.bgmBus, 0.03);
+                        arp.forEach((k, i) => this._note(ch[k] * 2, 'triangle', nextT + i * spb / 2, spb * 0.5, 0.06, this.bgmBus, 0.02));
+                        nextT += spb * 4; bar++;
+                    }
+                };
+                sched();
+                this.bgmInterval = setInterval(sched, 400);
+            },
+
+            stopBgm() {
+                if (this.bgmInterval) {
+                    clearInterval(this.bgmInterval);
+                    this.bgmInterval = null;
+                }
+            },
+
+            speak(text, done) {
+                if (!AppState.soundEnabled || !this.synth || !text) { if (done) setTimeout(done, 3000); return; }
+                if (typeof Reader !== 'undefined' && Reader.active) Reader.halt();
+                text = (typeof Reader !== 'undefined') ? Reader.clean(text) : text;
+                try {
+                    this.synth.cancel();
+                    clearTimeout(this._st);
+                    /* Jeda kecil setelah cancel() agar mesin suara tidak menelan ucapan baru */
+                    this._st = setTimeout(() => {
+                        const utter = new SpeechSynthesisUtterance(text);
+                        utter.lang = 'id-ID';
+                        utter.rate = AppState.speechRate || 0.95;
+                        const v = (this.synth.getVoices() || []).find(x => /^id/i.test(x.lang));
+                        if (v) utter.voice = v;
+                        /* Musik mengecil saat narasi berbicara (ducking) */
+                        utter.onstart = () => { if (this.bgmGain) this.bgmGain.gain.value = 0.3; ['wake-note','audio-hint'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; }); };
+                        let fin = false, wd;
+                        const finish = () => { if (fin) return; fin = true; clearTimeout(wd); if (this.bgmGain) this.bgmGain.gain.value = 0.9; if (done) done(); };
+                        wd = setTimeout(finish, text.length * 110 + 3000);
+                        utter.onend = finish;
+                        utter.onerror = e => { if (e && (e.error === 'canceled' || e.error === 'interrupted')) { clearTimeout(wd); if (this.bgmGain) this.bgmGain.gain.value = 0.9; return; } finish(); };
+                        this.synth.resume();
+                        this.synth.speak(utter);
+                    }, 120);
+                } catch (e) { console.warn('Narasi tidak tersedia'); }
+            }
+        };
+
+        /* Teks narasi pembuka tiap tahap (guru boleh mengedit). Dibaca otomatis saat tahap dibuka,
+           dan dapat diulang dengan tombol "Ulangi". */
+        const NARASI_TAHAP = [
+            "Tahap 1 dari 6, Misi Tim Detektif. Tuliskan nama panggilan kelompokmu, lalu pilih avatar: anak perempuan, anak laki-laki, atau anak pengguna kursi roda. Tujuan hari ini: kamu bisa mengamati sekolahmu, mencoba lalu membandingkan hasilnya, dan memilih satu aksi nyata. Jika sudah, tekan tombol Lanjut Tahap Berikutnya.",
+            "Tahap 2 dari 6, Menyelidiki Peta Sekolah. Ada lima titik di peta. Pilih satu titik, dengarkan masalahnya, pilih prediksimu, lalu pilih tindakan. Kerjakan titik-titik itu satu per satu. Terakhir, jawab kuis kilat di bagian bawah.",
+            "Tahap 3 dari 6, Cuaca atau Iklim. Cuaca berubah dari hari ke hari. Iklim adalah pola jangka panjang. Pilih sebuah kartu, lalu pilih kotak Cuaca atau kotak Iklim. Terakhir, jawab kuis kilat.",
+            "Tahap 4 dari 6, Hari Hujan Deras dan Latihan Siaga. Dengarkan hasil aksi kelompokmu saat hujan. Lalu urutkan lima langkah aman dengan tombol naik dan turun. Urutan mengikuti SOP sekolah; guru menyesuaikannya. Terakhir, jawab kuis kilat.",
+            "Tahap 5 dari 6, Latih Robot Boti. Ajari Boti memilah benda dengan memberi contoh. Hasil robot bergantung pada contoh yang diberikan dan bisa keliru. Manusia tetap memeriksa hasilnya. Terakhir, jawab kuis kilat.",
+            "Tahap 6 dari 6, Misi Nyata dan Refleksi. Jawab pertanyaan refleksi, pilih satu misi nyata, tulis satu kalimat alasan tanpa nama lengkap atau data pribadi, lalu cetak atau unduh kartumu."
+        ];
+
+
+
+        /* ===== NASKAH NARATOR (guru boleh mengedit) =====
+           Dibaca berurutan seperti Boti sedang bercerita pada anak. Format: [teks, 'selektor elemen yang disorot (opsional)'].
+           Gunakan {nama} untuk nama panggilan murid. */
+        const NARASI_PEMBUKA = [
+            ["Halo, teman-teman detektif! Aku Boti, robot kecil yang akan menemani kalian hari ini.", "#cover svg"],
+            ["Hari ini, sekolah kita berubah jadi laboratorium rahasia. Tugas kita seru sekali: mencari tahu bagaimana sekolah bisa lebih sejuk, hemat energi, dan siap saat hujan deras.", "#cover .hero"],
+            ["Sebelum mulai, kenali tombol di bagian atas layar. Ada tombol baca, tenang, musik, akses, dan guru. Di bagian bawah ada tombol Lanjut dan Kembali.", "#cover-fitur"],
+            ["Ada tiga tips, ya. Satu, colok charger kalau bisa. Dua, sentuh layar sesekali supaya layar tidak mati. Tiga, kalau layar sempat mati, ketuk tombol gambar speaker di bagian atas layar. Aku akan meneruskan ceritanya.", "#cover .tips"],
+            ["Kalau kalian sudah siap, tekan tombol hijau, Mulai Misi Detektif. Kita mulai petualangannya!", "#cover button"]
+        ];
+
+        const NARASI_ALIR = [
+            [ /* Tahap 1 */
+                ["Sebelum mulai, kita bagi tugas dulu, ya. Kalian bermain berkelompok, dan setiap teman punya tugas. Pembaca membacakan tulisan di layar. Pengoperasi mengetuk layar. Pencatat menulis hasil pengamatan. Dan Pendamping memastikan semua teman ikut. Tugas ini bergilir setiap tahap, jadi semua dapat giliran. Tidak ada yang hanya menonton! Di tahap ini, yang bertugas adalah Pembaca. Silakan bacakan tulisan untuk teman-temanmu.", "#stage-1 .role-badge"],
+                ["Ada tiga tujuan detektif hari ini. Pertama, kita mengamati sekolah dengan teliti. Kedua, kita mencoba sesuatu, lalu membandingkan hasilnya. Ketiga, kita memilih satu aksi nyata untuk menjaga bumi.", "#stage-1 > div:nth-child(2)"],
+                ["Sekarang, ketik nama panggilan kelompokmu, ya. Cukup nama panggilan saja, jangan nama lengkap. Lalu pilih tokoh yang kamu suka: anak perempuan, anak laki-laki, atau anak yang memakai kursi roda. Semua tokoh bisa jadi pemimpin yang hebat!", "#stage-1 > div:nth-child(3)"],
+                ["Satu pertanyaan dari Boti. Menurutmu, apa yang biasanya terjadi di sekolah kita kalau hujan turun deras berhari-hari? Ayo ngobrol dulu dengan temanmu. Tidak ada jawaban yang salah, kok!", "#stage-1 > div:nth-child(4)"],
+                ["Kalau sudah siap, tekan tombol Lanjut di bawah, ya. Kita mulai menyelidiki!", "#btn-next"]
+            ],
+            [ /* Tahap 2 */
+                ["Sekarang giliran tugas berganti. Yang jadi Pengoperasi, kamu yang mengetuk titik di peta sesuai pilihan kelompok. Yang lain jangan diam, ya. Ayo diskusi dulu sebelum memilih!", "#stage-2 .role-badge"],
+                ["Ini peta sekolah kita. Ada lima tempat yang perlu diselidiki: selokan, lahan kosong, lampu dan gorden, jendela kelas, dan tempat sampah. Ketuk salah satu angka, ya, supaya kita tahu apa masalahnya.", "#stage-2 > div:nth-child(2)"],
+                ["Caranya begini. Pertama, pilih tindakan yang menurutmu paling baik. Kedua, tebak, apa yang akan terjadi kalau tindakan itu dilakukan? Ketiga, tekan Coba Tindakan Ini. Kalau belum pas, tidak apa-apa. Kamu boleh memilih tindakan lain!"],
+                ["Di bawah peta ada papan data. Papan ini terisi sendiri dari hasil percobaan kalian. Nanti bandingkan dengan tebakanmu, sama atau beda? Coba sebutkan juga, pohon dan rumput ikut berubah tidak, ya? Air, cahaya, dan udara juga!", "#data-board-card"],
+                ["Di bagian paling bawah ada kuis kilat, dua soal singkat. Tidak ada nilai dan tidak ada batas waktu. Jawab bersama kelompokmu, ya!", "#quiz-2"],
+                ["Kalau sudah menyelidiki beberapa titik, tekan Lanjut.", "#btn-next"]
+            ],
+            [ /* Tahap 3 */
+                ["Tugas bergilir lagi. Sekarang giliran Pencatat. Tulis jawaban kelompok, dan pastikan kartu cuaca dan iklim dikelompokkan dengan benar. Teman-teman bantu mengingatkan, ya.", "#stage-3 .role-badge"],
+                ["Sekarang kita belajar sesuatu yang penting: bedanya cuaca dan iklim. Cuaca itu kejadian hari ini, misalnya hujan deras siang ini atau panas terik. Iklim itu pola yang berulang selama bertahun-tahun, misalnya musim hujan dan musim kemarau.", "#stage-3 > div:nth-child(2)"],
+                [() => LOKAL.kearifan ? ("Di daerah kita ada contoh lain. " + LOKAL.kearifan + ". Polanya berulang setiap tahun, jadi itu contoh iklim.") : "Zaman dulu, petani dan nelayan membaca tanda-tanda alam untuk tahu kapan hujan datang. Namanya pranata mangsa. Itu contoh iklim, karena polanya berulang setiap tahun."],
+                ["Ingat, satu hari hujan deras belum tentu tanda perubahan iklim. Tapi kalau pola jangka panjangnya berubah, itu bisa jadi tanda. Jadi kita harus teliti."],
+                ["Nah, giliranmu! Di bawah ada dua kotak: Kotak Cuaca dan Kotak Iklim. Baca kartu-kartu di bawahnya, lalu pilih kotak yang cocok. Ini cuaca, atau iklim? Aku akan memberi tahu apakah sudah pas.", "#cards-container"],
+                ["Terakhir, jawab kuis kilat di bawah untuk mengingat bedanya cuaca dan iklim. Tidak ada nilai, jadi tenang saja.", "#quiz-3"]
+            ],
+            [ /* Tahap 4 */
+                ["Sekarang giliran Pendamping. Tugasmu penting sekali: pastikan semua teman ikut bersiap dan tidak ada yang tertinggal. Bantu teman yang membutuhkan dengan sopan.", "#stage-4 .role-badge"],
+                ["Lihat, hujan deras turun di sekolah kita!", "#stage-4 > div:nth-child(2)"],
+                [() => rainInfo().speech],
+                ["Sekarang kita latihan Gerak Siaga selama satu menit, tanpa melihat layar. Yang berdiri, berbaris rapi dan berjalan tenang ke titik kumpul. Yang memakai kursi roda, bersiap di jalur landai. Yang duduk, boleh meregangkan tangan dan menarik napas pelan-pelan bersama. Semua bisa ikut, ya!", "#gerak-siaga"],
+                ["Terakhir, susun langkah aman sesuai urutannya. Pakai tombol panah naik dan turun. Pikirkan, mana yang dilakukan paling awal? Kalau sudah, tekan Cek Urutanku.", "#sop-container"],
+                ["Sambil menyusun, ngobrol yuk. Siapa yang paling butuh bantuan saat kita bersiap? Bagaimana cara membantunya dengan sopan, tanpa membuat dia merasa berbeda? Ingat, urutan ini mengikuti aturan sekolah, jadi Bapak atau Ibu Guru boleh menyesuaikannya."],
+                ["Setelah itu ada kuis kilat dua soal tentang langkah aman. Tidak ada nilai, ya. Jawab bersama temanmu.", "#quiz-4"]
+            ],
+            [ /* Tahap 5 */
+                ["Di tahap ini ada dua tugas. Pembaca membacakan nama benda, dan Pengoperasi memilih jawabannya. Kerja sama yang baik, ya!", "#stage-5 .role-badge"],
+                ["Sekarang kamu jadi guru untuk robot! Aku, Boti, belajar dari contoh yang kamu berikan."],
+                [() => { const e = document.getElementById('boti-item-name'); const n = e ? Reader.clean(e.textContent) : ''; return "Benda pertama yang harus kupelajari adalah " + n + ". Menurutmu, benda itu mudah membusuk atau sulit membusuk? Pilih salah satu, nanti aku belajar dari pilihanmu."; }, "#boti-item-name"],
+                ["Setelah belajar, aku akan mencoba menebak sendiri. Tapi hati-hati, kadang tebakanku bisa keliru, apalagi kalau bendanya aneh atau basah. Aku ini robot, jadi aku tidak punya perasaan dan tidak bisa merasa seperti kamu. Aku hanya bekerja dari contoh yang kamu berikan. Robot hanya sepintar contoh yang diberikan. Karena itu, manusia tetap harus memeriksa hasil kerja robot. Robot dibuat untuk membantu manusia, bukan menggantikan manusia."],
+                ["Satu lagi, ya. Lampu biasa hanya menyala atau padam, ia tidak belajar apa-apa. Aku berbeda, aku berubah dan makin pintar dari contohmu. Manusia mengenali benda dengan melihat, meraba, dan mencium. Komputer memakai ciri-ciri dari contoh. Makanya, contoh yang diberikan harus beragam, supaya hasilku adil.", "#ai-compare"],
+                ["Terakhir, kuis kilat tentang robot. Tidak ada nilai, jadi santai saja!", "#quiz-5"]
+            ],
+            [ /* Tahap 6 */
+                ["Di tahap terakhir, semua anggota bekerja bersama. Tidak ada yang menonton. Setiap teman punya ide untuk Kartu Misi Nyata.", "#stage-6 .role-badge"],
+                ["Hebat, {nama}! Kita sudah sampai di akhir misi. Ceritakan dulu, bagian mana yang paling seru, dan cara apa yang paling membantumu belajar? Setelah itu, kelompokmu boleh tos semangat bersama!", "#stage-6 > div:nth-child(2)"],
+                ["Sekarang pilih satu misi nyata yang akan kamu lakukan di sekolah. Pilih satu aksi, lalu tulis satu kalimat alasanmu. Ingat, jangan menulis nama lengkap atau data pribadi, ya. Terakhir, pilih kapan kamu melakukannya, dan siapa yang bisa membantumu: teman, guru, penjaga sekolah, atau orang tua.", "#stage-6 > div:nth-child(3)"],
+                ["Kartu misi nyatamu akan muncul di bawah. Kamu bisa mencetaknya, menyimpannya, atau memotretnya. Kelompok lain juga boleh memberi stiker semangat untuk kartumu. Terima kasih sudah jadi detektif iklim yang hebat. Sampai jumpa!", "#printable-mission-card"]
+            ]
+        ];
+
+        /* ===== PEMBACA RUNTUT: membacakan semua teks penting di tahap aktif, berurutan ===== */
+        const Reader = {
+            run: 0, active: false, waiting: false, items: [], idx: 0, cur: null, prefix: '',
+            /* Hilangkan emoji/simbol agar tidak dibacakan aneh */
+            clean(t) { return String(t).replace(/[\p{Extended_Pictographic}\u200d\ufe0f]/gu, '').replace(/&/g, ' dan ').replace(/[➜→]/g, ' ').replace(/\s+/g, ' ').trim(); },
+                        start(prefix, from, custom) {
+                this.prefix = prefix || ''; this.paused = false;
+                if (custom) this.script = custom;
+                if (!AppState.soundEnabled || !AudioSys.synth) return;
+                this.halt(true);
+                const root = document.getElementById('stage-' + AppState.currentStage);
+                if (!root) return;
+                const run = ++this.run;
+                const nm = AppState.playerName || 'Detektif';
+                const src = this.script || (document.body.classList.contains('cover-mode') ? NARASI_PEMBUKA : (NARASI_ALIR[AppState.currentStage - 1] || []));
+                const list = src.map(x => {
+                    const t = (typeof x[0] === 'function' ? x[0]() : x[0]).replace(/\{nama\}/g, nm);
+                    return {el: x[1] ? document.querySelector(x[1]) : null, text: t};
+                });
+                this.items = (this.prefix ? [{el: null, text: this.prefix}] : []).concat(list);
+                this.resumeAt = from || 0; this.idx = Math.min(from || 0, this.items.length); this.active = true; this.ui(); this.keepAwake();
+                setTimeout(() => { if (run === this.run) this.next(run); }, 150);
+                /* Jika browser memblokir suara otomatis, tunggu ketukan pertama di mana saja */
+                setTimeout(() => { if (run === this.run && this.active && this.idx <= 1 && !AudioSys.synth.speaking && !AudioSys.synth.pending) this.blocked(); }, 1800);
+            },
+            next(run) {
+                if (run !== this.run || !this.active) return;
+                this.mark(null);
+                if (document.hidden) { this.paused = true; this.resumeAt = Math.max(0, this.idx - 1); this.halt(true); this.ui(); return; }
+                if (this.idx >= this.items.length) { this.active = false; this.paused = false; this.resumeAt = 0; this.release(); if (AudioSys.bgmGain) AudioSys.bgmGain.gain.value = 0.9; this.ui(); return; }
+                const it = this.items[this.idx++]; this.mark(it.el);
+                this.resumeAt = this.idx - 1; const t0 = Date.now();
+                const u = new SpeechSynthesisUtterance(it.text);
+                u.lang = 'id-ID'; u.rate = AppState.speechRate || 0.95;
+                const v = (AudioSys.synth.getVoices() || []).find(x => /^id/i.test(x.lang)); if (v) u.voice = v;
+                let done = false, wd;
+                const go = () => { if (done) return; done = true; clearTimeout(wd); setTimeout(() => this.next(run), 350); };
+                u.onstart = () => { if (AudioSys.bgmGain) AudioSys.bgmGain.gain.value = 0.3; ['wake-note','audio-hint'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; }); };
+                u.onend = () => {
+                    if (Date.now() - t0 < Math.min(1500, it.text.length * 25)) { done = true; clearTimeout(wd); this.interrupted(); return; }
+                    go();
+                };
+                u.onerror = e => { if (e.error === 'not-allowed') { this.blocked(); return; } if (e.error === 'canceled' || e.error === 'interrupted') return; go(); };
+                wd = setTimeout(go, Math.max(4000, it.text.length * 110 + 3000));
+                try { AudioSys.synth.resume(); AudioSys.synth.speak(u); } catch (e) { go(); }
+            },
+            /* Suara diputus sistem: simpan posisi, lanjutkan dari kalimat yang terputus (bukan dari awal) */
+            interrupted() { this.pause(true); if (!document.hidden) this.showResumeHint(); },
+            /* Jeda: simpan posisi kalimat; tombol berubah jadi "Lanjut" dan meneruskan dari kalimat itu */
+            pause(quiet) {
+                if (this.active) { this.resumeAt = Math.max(0, this.idx - 1); this.paused = true; }
+                this.halt(quiet); this.ui();
+            },
+            showResumeHint() {
+                let h = document.getElementById('audio-hint');
+                if (!h) { h = document.createElement('div'); h.id = 'audio-hint'; h.className = 'audio-hint'; h.setAttribute('role', 'status'); document.body.appendChild(h); }
+                h.textContent = '🔊 Layar sempat mati. Ketuk di sini untuk melanjutkan cerita Boti';
+                h.style.display = 'block';
+                h.onclick = () => { h.style.display = 'none'; h.onclick = null; Reader.toggle(); };
+            },
+            mark(el) {
+                if (this.cur) this.cur.classList.remove('reading-now');
+                this.cur = el;
+                if (el) { el.classList.add('reading-now'); el.scrollIntoView({block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); }
+            },
+            halt(quiet) { this.run++; this.active = false; this.release(); try { AudioSys.synth && AudioSys.synth.cancel(); } catch (e) {} this.mark(null); if (AudioSys.bgmGain) AudioSys.bgmGain.gain.value = 0.9; if (!quiet) this.ui(); },
+            /* Jaga layar tetap menyala selama narasi agar suara tidak terputus saat layar HP mati sendiri */
+            lock: null,
+            note(msg) {
+                if (document.body.classList.contains('cover-mode')) { this.noted = false; return; }
+                let n = document.getElementById('wake-note');
+                if (!n) { n = document.createElement('div'); n.id = 'wake-note'; n.className = 'wake-note'; n.setAttribute('role', 'status'); document.body.appendChild(n); }
+                n.textContent = msg; n.style.display = 'block';
+                clearTimeout(n._h); n._h = setTimeout(() => n.style.display = 'none', 4000);
+            },
+            async keepAwake() {
+                try {
+                    if (!('wakeLock' in navigator)) throw new Error('unsupported');
+                    if (!this.lock) { this.lock = await navigator.wakeLock.request('screen'); this.lock.addEventListener('release', () => { this.lock = null; }); }
+                    if (!this.noted) { this.noted = true; this.note('🔆 Layar dijaga tetap menyala selama Boti bercerita, supaya suaranya tidak berhenti.'); }
+                } catch (e) {
+                    if (!this.noted) { this.noted = true; this.note('ℹ️ Agar suara tidak berhenti, atur waktu layar HP ke lebih lama atau sentuh layar sesekali.'); }
+                }
+            },
+            release() { try { if (this.lock) { this.lock.release(); } } catch (e) {} this.lock = null; },
+            toggle() {
+                if (this.active) this.pause();
+                else { if (!this.paused) this.script = null; this.start(this.prefix, this.paused ? this.resumeAt : 0); }
+            },
+            ui() {
+                const b = document.getElementById('btn-read'); if (!b) return;
+                const st = this.active ? ['⏸️', 'Jeda', 'Jeda narasi'] : this.paused ? ['🔊', 'Lanjut', 'Lanjutkan narasi dari kalimat tadi'] : ['🔊', 'Baca', 'Bacakan tahap ini'];
+                b.innerHTML = `<span class="tb-ic" aria-hidden="true">${st[0]}</span><span>${st[1]}</span>`;
+                b.setAttribute('aria-label', st[2]);
+            },
+            /* Autoplay diblokir: tampilkan petunjuk, mulai di ketukan/tombol pertama */
+            blocked() {
+                if (this.active && this.idx > 1) { this.resumeAt = Math.max(0, this.idx - 1); this.paused = true; }
+                this.halt(true); this.ui();
+                if (this.waiting) return;
+                this.waiting = true;
+                let h = document.getElementById('audio-hint');
+                if (!h) { h = document.createElement('div'); h.id = 'audio-hint'; h.className = 'audio-hint'; h.setAttribute('role', 'status'); h.textContent = '🔊 Ketuk layar di mana saja, Boti akan mulai bercerita'; document.body.appendChild(h); }
+                h.textContent = '🔊 Ketuk layar di mana saja, Boti akan mulai bercerita'; h.onclick = null; h.style.display = 'block';
+                const evs = ['pointerup', 'click', 'keydown', 'touchend'];
+                const go = (ev) => {
+                    evs.forEach(e => document.removeEventListener(e, go, true));
+                    h.style.display = 'none'; this.waiting = false;
+                    AudioSys.init();
+                    if (AppState.musicEnabled && !AudioSys.bgmInterval) AudioSys.startBgm();
+                    /* ketukan pada tombol Baca/Lanjut ditangani tombolnya sendiri (agar tidak mulai lalu langsung berhenti) */
+                    if (ev && ev.target && ev.target.closest && ev.target.closest('#btn-read')) return;
+                    this.start(this.prefix, this.paused ? (this.resumeAt || 0) : 0);
+                };
+                evs.forEach(e => document.addEventListener(e, go, true));
+            }
+        };
+
+        /* Jika layar mati / aplikasi pindah ke latar belakang, suara berhenti. Saat kembali, lanjutkan dari kalimat terakhir. */
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) { if (Reader.active) Reader.pause(true); }
+            else if (Reader.paused) Reader.showResumeHint();
+        });
+        ['pageshow', 'focus'].forEach(ev => window.addEventListener(ev, () => {
+            if (!document.hidden && Reader.paused) Reader.showResumeHint();
+        }));
+
+        /* Umumkan tahap: suara aplikasi, teks untuk pembaca layar, dan fokus ke judul tahap */
+        function announceStage(prefix) {
+            Reader.script = null;
+            Reader.start(prefix);
+            const live = document.getElementById('sr-live');
+            if (live && !AppState.soundEnabled) { const txt = NARASI_TAHAP[AppState.currentStage - 1]; live.textContent = ''; setTimeout(() => live.textContent = txt, 50); }
+            const box = document.body.classList.contains('cover-mode') ? '#cover' : `#stage-${AppState.currentStage}`;
+            const h = document.querySelector(`${box} h1, ${box} h2`);
+            if (h) { h.setAttribute('tabindex', '-1'); h.focus({preventScroll: true}); }
+        }
+
+        /* Pesan singkat yang dibaca dan terlihat (pengganti alert yang memblokir) */
+        function notify(msg) {
+            let t = document.getElementById('toast-msg');
+            if (!t) { t = document.createElement('div'); t.id = 'toast-msg'; t.setAttribute('role', 'alert'); t.className = 'toast-msg'; t.style.cursor = 'pointer'; document.body.appendChild(t); }
+            t.textContent = '💬 ' + msg;
+            const tip = document.createElement('small'); tip.textContent = ' (ketuk untuk menutup)'; tip.style.opacity = '.7'; t.appendChild(tip);
+            t.style.display = 'block';
+            clearTimeout(t._h); clearTimeout(t._f);
+            /* pesan tetap tampil selama narator masih menjelaskan, lalu hilang 2 detik setelah selesai */
+            const hide = () => { clearTimeout(t._h); clearTimeout(t._f); t._h = setTimeout(() => t.style.display = 'none', 2000); };
+            t.onclick = () => { clearTimeout(t._h); clearTimeout(t._f); t.style.display = 'none'; };
+            AudioSys.speak(msg, () => { if (AppState.soundEnabled && AudioSys.synth) hide(); });
+            t._f = setTimeout(hide, msg.length * 130 + 6000);
+        }
+
+        function startHero(btn) {
+            AudioSys.init();
+            playSfx('correct');
+            if (AppState.musicEnabled && !AudioSys.bgmInterval) AudioSys.startBgm();
+            document.body.classList.remove('cover-mode');
+            document.getElementById('stage-indicator').innerText = `Tahap 1 dari ${AppState.totalStages}`;
+            window.scrollTo(0, 0);
+            announceStage();
+        }
+
+        function playSfx(type) {
+            AudioSys.init();
+            const A = AudioSys;
+            if (!A.ctx || !AppState.soundEnabled) return;
+            if (A.ctx.state === 'suspended') A.ctx.resume();
+            const t = A.ctx.currentTime, m = A.masterGain;
+            if (type === 'click') {            // "pop" lembut
+                A._note(660, 'sine', t, 0.09, 0.18, m, 0.005);
+                A._note(990, 'sine', t + 0.02, 0.07, 0.07, m, 0.005);
+            }
+            if (type === 'correct') {          // arpeggio ceria naik, bunyi lonceng
+                [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+                    A._note(f, 'triangle', t + i * 0.08, 0.35, 0.16, m, 0.01);
+                    A._note(f * 2, 'sine', t + i * 0.08, 0.25, 0.04, m, 0.01);
+                });
+            }
+            if (type === 'wrong') {            // nada hangat netral, bukan buzzer
+                A._note(392, 'sine', t, 0.25, 0.14, m, 0.02);
+                A._note(349.23, 'sine', t + 0.16, 0.35, 0.14, m, 0.02);
+            }
+        }
+
+        /* ==============================
+           4. UI CONTROLS & MODALS
+        ============================== */
+        function togglePanel(panelId) {
+            playSfx('click');
+            const panel = document.getElementById(panelId);
+            const overlay = document.getElementById('overlay');
+            const isOpen = panel.style.display === 'block';
+            closeAllPanels();
+            if (!isOpen) {
+                panel.style.display = 'block';
+                overlay.style.display = 'block';
+            }
+        }
+
+        function closeAllPanels() {
+            document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function toggleMusic() {
+            AppState.musicEnabled = !AppState.musicEnabled;
+            const btnHeader = document.getElementById('btn-bgm-toggle');
+            const btnAcc = document.getElementById('btn-acc-bgm');
+
+            if (AppState.musicEnabled) {
+                btnHeader.innerHTML = '<span class="tb-ic" aria-hidden="true">🎵</span><span>Musik</span>'; btnHeader.setAttribute("aria-pressed","true");
+                btnAcc.innerText = "Matikan Musik Latar";
+                AudioSys.startBgm();
+            } else {
+                btnHeader.innerHTML = '<span class="tb-ic" aria-hidden="true">🔇</span><span>Musik mati</span>'; btnHeader.setAttribute("aria-pressed","false");
+                btnAcc.innerText = "Aktifkan Musik Latar";
+                AudioSys.stopBgm();
+            }
+            playSfx('click');
+        }
+
+        function setSpeechRate(r, btn) {
+            AppState.speechRate = r;
+            document.querySelectorAll('#rate-group button').forEach(b => b.setAttribute('aria-pressed', b === btn));
+            AudioSys.speak('Halo! Begini kecepatan suaraku sekarang.');
+        }
+
+        function setSound(status) {
+            AppState.soundEnabled = status;
+            if (status) {
+                AudioSys.init();
+                playSfx('correct');
+                AudioSys.speak("Suara diaktifkan.");
+            } else {
+                if (AudioSys.synth) AudioSys.synth.cancel();
+            }
+            document.getElementById('btn-sound-on').style.backgroundColor = status ? "var(--primary)" : "transparent";
+            document.getElementById('btn-sound-on').style.color = status ? "#fff" : "var(--text)";
+            document.getElementById('btn-sound-off').style.backgroundColor = !status ? "var(--primary)" : "transparent";
+            document.getElementById('btn-sound-off').style.color = !status ? "#fff" : "var(--text)";
+        }
+
+        function updateVolume(val) {
+            AppState.volumeBoost = parseFloat(val);
+            if (AudioSys.masterGain) {
+                AudioSys.masterGain.gain.value = AppState.volumeBoost;
+            }
+            document.getElementById('volume-label').innerText = `Level: ${val}x`;
+            playSfx('click');
+        }
+
+        function setTextSize(sizeClass) {
+            document.body.className = document.body.className.replace(/text-(large|xlarge)/g, '').trim();
+            if (sizeClass !== 'normal') document.body.classList.add(`text-${sizeClass}`);
+            playSfx('click');
+        }
+
+        function toggleContrast() {
+            document.body.classList.toggle('high-contrast');
+            playSfx('click');
+        }
+
+        function toggleJedaTenang() {
+            togglePanel('jeda-panel');
+            AudioSys.speak("Mari bernapas tenang sejenak. Tarik napas... lalu hembuskan...");
+            const txt = document.getElementById('breath-text');
+            let isTarik = true;
+            let cycle = 0;
+            const interval = setInterval(() => {
+                if (document.getElementById('jeda-panel').style.display === 'none' || cycle >= 6) {
+                    clearInterval(interval);
+                    return;
+                }
+                isTarik = !isTarik;
+                txt.innerText = isTarik ? "Tarik napas..." : "Hembuskan...";
+                cycle++;
+            }, 4000);
+        }
+
+        /* ==============================
+           5. STAGE NAVIGATION LOGIC
+        ============================== */
+        /* Dari Tahap 1, Kembali membawa murid ke halaman selamat datang */
+        function backToCover() {
+            document.body.classList.add('cover-mode');
+            document.getElementById('stage-indicator').innerText = 'Selamat Datang! 🌟';
+            window.scrollTo(0, 0);
+            announceStage();
+        }
+
+        function changeStage(dir) {
+            playSfx('click');
+            if (AppState.currentStage === 1 && dir === -1) { backToCover(); return; }
+            if (AppState.currentStage === 1 && dir === 1) {
+                const nameInput = document.getElementById('player-name').value.trim();
+                if (!nameInput) {
+                    notify("Tuliskan nama panggilan kelompokmu dulu ya!");
+                    return;
+                }
+                if (!AppState.avatar) {
+                    notify("Pilih satu avatar untuk karaktermu dulu ya!");
+                    return;
+                }
+                AppState.playerName = nameInput;
+                updateCardPreview();
+                var stagePrefix = `Siap, Detektif ${AppState.playerName}! Mari kita mulai.`;
+            }
+
+            document.getElementById(`stage-${AppState.currentStage}`).classList.remove('active');
+            AppState.currentStage += dir;
+            document.getElementById(`stage-${AppState.currentStage}`).classList.add('active');
+            
+            document.getElementById('stage-indicator').innerText = `Tahap ${AppState.currentStage} dari ${AppState.totalStages}`;
+            const pf = document.getElementById('prog-fill'); if (pf) pf.style.width = (AppState.currentStage / AppState.totalStages * 100) + '%';
+            document.getElementById('btn-prev').style.visibility = 'visible';
+            
+            if (AppState.currentStage === AppState.totalStages) {
+                document.getElementById('btn-next').style.display = 'none';
+            } else {
+                document.getElementById('btn-next').style.display = 'inline-flex';
+                document.getElementById('btn-next').innerText = "Lanjut Tahap Berikutnya ➡️";
+            }
+
+            if (AppState.currentStage === 2) initMap();
+            if (AppState.currentStage === 3) initCuacaIklim();
+            if (AppState.currentStage === 4) initSop();
+            if (AppState.currentStage === 5) initBoti();
+            if (AppState.currentStage === 6) updateCardPreview();
+            
+            window.scrollTo(0,0);
+            announceStage(typeof stagePrefix !== 'undefined' ? stagePrefix : '');
+        }
+
+        function selectAvatar(name, el) {
+            playSfx('click');
+            document.querySelectorAll('.avatar-select').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            AppState.avatar = name;
+            document.querySelectorAll('.avatar-select').forEach(e => e.setAttribute('aria-pressed', e === el));
+        }
+
+        /* ==============================
+           6. STAGE 2: MAP LOGIC
+        ============================== */
+        function initMap() {
+            if (document.getElementById('map-spots-container').innerHTML !== "") return;
+            const container = document.getElementById('map-spots-container');
+            SKENARIO.mapSpots.forEach(spot => {
+                const btn = document.createElement('div');
+                btn.className = 'map-spot';
+                btn.style.left = `calc(${spot.x}% - 24px)`;
+                btn.style.top = `calc(${spot.y}% - 24px)`;
+                btn.innerText = spot.id;
+                btn.setAttribute('role', 'button'); btn.setAttribute('tabindex', '0');
+                btn.setAttribute('aria-label', `Titik ${spot.id}: ${spot.name}`);
+                btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); } });
+                btn.id = `spot-btn-${spot.id}`;
+                btn.onclick = () => openSpot(spot);
+                container.appendChild(btn);
+            });
+        }
+
+        let currentSpot = null;
+        function openSpot(spot) {
+            playSfx('click');
+            const doneBtn = document.getElementById(`spot-btn-${spot.id}`);
+            if (doneBtn && doneBtn.classList.contains('done')) { notify('Titik ini sudah selesai. Pilih titik lain, ya!'); return; }
+            currentSpot = spot;
+            document.getElementById('spot-detail').style.display = 'block';
+            document.getElementById('aha-moment').style.display = 'none';
+            resetSelection();
+            document.getElementById('spot-title').innerText = `📍 Titik ${spot.id}: ${spot.name}`;
+            document.getElementById('spot-issue').innerText = spot.issue;
+            
+            const actionContainer = document.getElementById('spot-actions');
+            actionContainer.innerHTML = '';
+            
+            spot.actions.forEach((act, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-outline';
+                btn.innerText = act;
+                btn.setAttribute('aria-pressed', 'false'); btn.onclick = () => selectAction(idx, btn);
+                actionContainer.appendChild(btn);
+            });
+            
+            AudioSys.speak(`Titik ${spot.id}, ${spot.name}. Masalahnya: ${spot.issue}. Sekarang, pilih tindakan yang menurutmu paling baik.`);
+            document.getElementById('spot-detail').scrollIntoView({behavior: "smooth", block: "start"});
+        }
+
+        function handleAction(actionIdx) {
+            const pred = document.getElementById('spot-prediction').value;
+            if (!pred) {
+                notify("Pilih prediksimu dulu sebelum mencoba tindakan!");
+                return;
+            }
+
+            const actionText = currentSpot.actions[actionIdx];
+            const isCorrect = (actionIdx === currentSpot.correctAction);
+            /* Bandingkan prediksi murid dengan hasil nyata dari tindakan yang dipilih */
+            const outcome = (currentSpot.effects || [])[actionIdx] || (isCorrect ? 'Lingkungan membaik' : 'Tidak ada perubahan');
+            const match = (pred === outcome);
+            const predMsg = match ? 'Prediksimu cocok dengan hasilnya!' : `Prediksimu "${pred.toLowerCase()}" berbeda dari hasilnya, yaitu "${outcome.toLowerCase()}". Tidak apa-apa, itu bagian dari belajar!`;
+
+            if (isCorrect) {
+                playSfx('correct');
+                document.getElementById('spot-detail').style.display = 'none';
+                
+                const ahaBox = document.getElementById('aha-moment');
+                ahaBox.style.display = 'block';
+                document.getElementById('aha-text').innerText = `✨ ${currentSpot.aha}\n${match ? '🎯' : '🔄'} ${predMsg}`;
+                
+                document.getElementById(`spot-btn-${currentSpot.id}`).classList.add('done');
+                document.getElementById(`spot-btn-${currentSpot.id}`).innerText = "✔️";
+                document.getElementById(`spot-btn-${currentSpot.id}`).setAttribute('aria-label', `Titik ${currentSpot.id}: ${currentSpot.name}, selesai`);
+                const ib = document.getElementById(`ill-${currentSpot.id}-before`), ia = document.getElementById(`ill-${currentSpot.id}-after`);
+                if (ib) ib.style.display = 'none'; if (ia) ia.style.display = 'inline';
+                
+                const tbody = document.getElementById('data-board-body');
+                if (AppState.mapProgress === 0) tbody.innerHTML = '';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding:8px; border:1px solid var(--border);">${currentSpot.name}</td>
+                    <td style="padding:8px; border:1px solid var(--border);">${actionText}</td>
+                    <td style="padding:8px; border:1px solid var(--border); color:var(--primary); font-weight:bold;">${currentSpot.aha}<br><small style="font-weight:normal; color:var(--text);">${match ? '🎯' : '🔄'} ${predMsg}</small></td>
+                `;
+                tbody.appendChild(tr);
+                
+                AppState.mapProgress++;
+                document.getElementById('spot-prediction').value = "";
+                resetSelection();
+                const allDone = AppState.mapProgress >= document.querySelectorAll('.map-spot').length;
+                /* setelah titik terakhir selesai, narator mengarahkan melihat peta lalu Papan Data */
+                AudioSys.speak(`Tindakanmu bagus! ${currentSpot.aha} ${predMsg}`, () => { if (allDone) setTimeout(runMapReview, 800); });
+            } else {
+                playSfx('wrong');
+                notify(`Hampir! Tindakan ini hasilnya: ${outcome.toLowerCase()}. ${predMsg} Coba pilihan lain, ya!`);
+                resetSelection();
+            }
+        }
+
+        /* Pilih tindakan -> tebak hasil tindakan itu -> coba */
+        function selectAction(idx, btn) {
+            playSfx('click');
+            AppState.selAction = idx;
+            document.querySelectorAll('#spot-actions button').forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); });
+            btn.classList.add('selected'); btn.setAttribute('aria-pressed', 'true');
+            const box = document.getElementById('spot-pred-box');
+            box.style.display = 'block';
+            document.getElementById('spot-pred-label').innerText = `🤔 Prediksi: menurutmu, apa yang akan terjadi jika kamu memilih "${currentSpot.actions[idx]}"?`;
+            document.getElementById('spot-prediction').value = '';
+            document.getElementById('btn-try').disabled = true;
+            AudioSys.speak(`Kamu memilih ${currentSpot.actions[idx]}. Menurutmu, apa yang akan terjadi? Pilih prediksimu, lalu tekan Coba Tindakan Ini.`);
+            box.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center'});
+        }
+
+        function resetSelection() {
+            AppState.selAction = null;
+            const box = document.getElementById('spot-pred-box'); if (box) box.style.display = 'none';
+            const sel = document.getElementById('spot-prediction'); if (sel) sel.value = '';
+            const bt = document.getElementById('btn-try'); if (bt) bt.disabled = true;
+            document.querySelectorAll('#spot-actions button').forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); });
+        }
+
+        function runAction() {
+            if (AppState.selAction === null || AppState.selAction === undefined) { notify('Pilih tindakannya dulu, ya!'); return; }
+            handleAction(AppState.selAction);
+        }
+
+        /* Setelah semua titik selesai: narator mengajak melihat peta yang berubah, lalu Papan Data, lalu Lanjut */
+        function runMapReview() {
+            if (AppState.reviewShown || AppState.currentStage !== 2) return;
+            AppState.reviewShown = true;
+            document.getElementById('aha-moment').style.display = 'none';
+            document.getElementById('spot-detail').style.display = 'none';
+            const script = [
+                ["Hebat sekali! Semua titik sudah kamu selidiki. Sekarang lihat peta sekolahmu. Perhatikan, selokan mengalir lancar, pohon tumbuh, sampah sudah dipilah, dan kelas jadi lebih sejuk. Sekolah kita berubah karena pilihan kalian!", "#stage-2 .map-container"],
+                ["Sekarang, lihat Papan Data Kelompok. Di sini tertulis tindakan dan hasil tiap titik, juga apakah prediksimu cocok dengan hasilnya. Coba baca bersama temanmu: prediksi mana yang cocok, dan mana yang berbeda?", "#data-board-card"],
+                ["Kalau sudah, tekan tombol Lanjut untuk ke tahap berikutnya.", "#btn-next"]
+            ];
+            if (AppState.soundEnabled && AudioSys.synth) { Reader.start('', 0, script); }
+            else {
+                Reader.mark(document.querySelector('#stage-2 .map-container'));
+                setTimeout(() => Reader.mark(document.getElementById('data-board-card')), 5000);
+                setTimeout(() => Reader.mark(null), 10000);
+                notify('Lihat peta yang sudah berubah, lalu baca Papan Data Kelompok. Kalau sudah, tekan Lanjut.');
+            }
+        }
+
+        function closeSpot() {
+            playSfx('click');
+            document.getElementById('aha-moment').style.display = 'none';
+        }
+
+        /* ==============================
+           7. STAGE 3: WEATHER vs CLIMATE
+        ============================== */
+        function initCuacaIklim() {
+            if (document.getElementById('cards-container').children.length > 1) return;
+            const container = document.getElementById('cards-container');
+            
+            SKENARIO.cuacaIklim.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'draggable-card';
+                div.id = `ci-card-${item.id}`;
+                div.innerHTML = `
+                    <span style="font-weight:bold; flex:1;">"${item.text}"</span>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-outline" style="min-height:36px; padding:6px 12px; font-size:0.85rem;" onclick="answerCI(${item.id}, 'CUACA')">🌤️ Cuaca</button>
+                        <button class="btn-outline" style="min-height:36px; padding:6px 12px; font-size:0.85rem;" onclick="answerCI(${item.id}, 'IKLIM')">🌍 Iklim</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function answerCI(id, chosenType) {
+            const item = SKENARIO.cuacaIklim.find(x => x.id === id);
+            if (item.type === chosenType) {
+                playSfx('correct');
+                const targetBox = document.getElementById(`box-${chosenType.toLowerCase()}`);
+                const el = document.createElement('div');
+                el.style.cssText = "background:var(--card-bg); padding:8px; border:1px solid var(--border); border-radius:6px; margin-top:8px; font-size:0.85rem; text-align:left;";
+                el.innerHTML = `✔️ "${item.text}"<br><small>${CI_WHY[id]}</small>`;
+                targetBox.appendChild(el);
+                
+                document.getElementById(`ci-card-${id}`).style.display = 'none';
+                AudioSys.speak(`Tepat! ${CI_WHY[id]}`);
+            } else {
+                playSfx('wrong');
+                notify('Hampir! ' + (item.type === 'CUACA' ? 'Coba tanya dirimu: apakah ini hanya terjadi hari ini atau beberapa hari saja?' : 'Coba tanya dirimu: apakah ini pola yang berulang selama bertahun-tahun?') + ' Coba lagi, ya!');
+            }
+        }
+
+        /* ==============================
+           8. STAGE 4: DRILL & SOP LOGIC
+        ============================== */
+        /* Keterangan hujan: hanya yang BELUM diperbaiki (kalimat singkat) */
+        function rainInfo() {
+            const spots = SKENARIO.mapSpots;
+            const isDone = sp => { const b = document.getElementById(`spot-btn-${sp.id}`); return !!(b && b.classList.contains('done')); };
+            const todo = spots.filter(sp => !isDone(sp));
+            const names = todo.map(sp => sp.name.toLowerCase()).join(', ');
+            const selokanTodo = todo.some(sp => sp.id === 1);
+            if (!todo.length) return {
+                text: '🎉 Semua titik sudah diperbaiki. Sekolah aman dari genangan!',
+                speech: 'Hore! Semua titik sudah diperbaiki. Sekolah kita aman dari genangan!' };
+            return {
+                text: `⚠️ Belum diperbaiki: ${names}.` + (selokanTodo ? '\n💧 Selokan belum bersih, jadi ada genangan.' : ''),
+                speech: (selokanTodo ? 'Selokan belum bersih, jadi ada genangan. ' : '') + `Titik yang belum diperbaiki: ${names}.` };
+        }
+
+        function initSop() {
+            document.getElementById('rain-result').innerText = rainInfo().text;
+
+            if (AppState.sopCards.length > 0) return;
+            
+            let shuffled = [...SKENARIO.sopBencana];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            AppState.sopCards = shuffled;
+            renderSopUI();
+        }
+
+        function renderSopUI() {
+            const container = document.getElementById('sop-container');
+            container.innerHTML = '';
+            
+            AppState.sopCards.forEach((text, index) => {
+                const div = document.createElement('div');
+                div.className = 'draggable-card';
+                div.innerHTML = `
+                    <div style="font-weight:bold; width:28px; height:28px; background:var(--bg); border-radius:50%; display:flex; align-items:center; justify-content:center;">${index+1}</div>
+                    <span style="flex:1; font-size:0.9rem;">${text}</span>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <button class="btn-outline" style="padding:2px 8px; min-height:auto;" onclick="moveSop(${index}, -1)" ${index===0 ? 'disabled' : ''}>⬆️</button>
+                        <button class="btn-outline" style="padding:2px 8px; min-height:auto;" onclick="moveSop(${index}, 1)" ${index===AppState.sopCards.length-1 ? 'disabled' : ''}>⬇️</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function moveSop(index, direction) {
+            playSfx('click');
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= AppState.sopCards.length) return;
+            
+            const temp = AppState.sopCards[index];
+            AppState.sopCards[index] = AppState.sopCards[targetIndex];
+            AppState.sopCards[targetIndex] = temp;
+            
+            renderSopUI();
+        }
+
+        function checkSop() {
+            let correct = 0;
+            for (let i = 0; i < SKENARIO.sopBencana.length; i++) {
+                if (AppState.sopCards[i] === SKENARIO.sopBencana[i]) correct++;
+            }
+            
+            const feedbackBox = document.getElementById('sop-feedback');
+            if (correct === SKENARIO.sopBencana.length) {
+                playSfx('correct');
+                feedbackBox.style.color = "var(--primary)";
+                feedbackBox.innerText = "⭐ Sempurna! Susunan langkah keselamatan sudah benar.";
+                AudioSys.speak("Luar biasa! Susunan langkah keselamatan sudah benar.");
+            } else {
+                playSfx('wrong');
+                feedbackBox.style.color = "var(--accent)";
+                feedbackBox.innerText = `Kamu menyusun ${correct} posisi dengan benar. Urutkan lagi secara logis.`;
+                AudioSys.speak(`Kamu menyusun ${correct} posisi dengan benar. Coba urutkan lagi.`);
+            }
+        }
+
+        /* ==============================
+           9. STAGE 5: ROBOT BOTI TRAINING
+        ============================== */
+        function initBoti() {
+            AppState.botiIndex = 0;
+            showBotiItem();
+        }
+
+        function showBotiItem(speakIt) {
+            AppState.botiBusy = false;
+            if (AppState.botiIndex >= SKENARIO.botiItems.length) {
+                document.getElementById('boti-item-name').innerText = "🎉 Selesai Latihan!";
+                document.getElementById('boti-question').style.display = 'none';
+                document.getElementById('boti-choices').style.display = 'none';
+                document.getElementById('boti-feedback').style.color = "var(--primary)";
+                document.getElementById('boti-feedback').innerText = "Terima kasih! Boti kini lebih pintar memilah sampah, meski tetap butuh pengawasan manusia. Tekan Lanjut untuk ke tahap terakhir.";
+                if (speakIt) AudioSys.speak("Hebat! Latihan selesai. Terima kasih sudah mengajari aku. Sekarang aku lebih pintar memilah sampah. Tapi ingat, manusia tetap harus memeriksa hasil kerja robot, ya. Kalau sudah siap, tekan tombol Lanjut.");
+                return;
+            }
+            
+            const item = SKENARIO.botiItems[AppState.botiIndex];
+            document.getElementById('boti-question').style.display = '';
+            document.getElementById('boti-choices').style.display = '';
+            document.getElementById('boti-item-name').innerText = item.name;
+            document.getElementById('boti-feedback').innerText = "";
+            if (speakIt) AudioSys.speak(`Benda berikutnya: ${item.name}. Menurutmu, benda ini mudah membusuk atau sulit membusuk?`);
+        }
+
+        function trainBoti(choice) {
+            if (AppState.botiIndex >= SKENARIO.botiItems.length || AppState.botiBusy) return;
+            const item = SKENARIO.botiItems[AppState.botiIndex];
+            const feedback = document.getElementById('boti-feedback');
+            let fbText = '';
+            
+            if (item.type === "Ambigu") {
+                playSfx('correct');
+                feedback.style.color = "var(--accent)";
+                feedback.innerHTML = `🤖 <em>Boti Bingung!</em> Benda ini memiliki sifat campuran. Inilah pentingnya manusia memeriksa hasil kerja robot.`;
+                fbText = "Boti bingung! Benda ini campuran. Manusia harus tetap membantuku memilah, ya.";
+            } else if (item.type === choice) {
+                playSfx('correct');
+                feedback.style.color = "var(--primary)";
+                feedback.innerHTML = `✔️ Tepat! Boti merekam pola: <strong>${item.name} = ${choice}</strong>.`;
+                fbText = `Tepat sekali! Sekarang aku tahu, ${item.name} itu termasuk ${choice.replace(/\(.*?\)/g, '')}.`;
+            } else {
+                playSfx('wrong');
+                feedback.style.color = "var(--accent)";
+                feedback.innerHTML = `❌ Hampir! <strong>${item.name}</strong> tergolong <strong>${item.type}</strong>.`;
+                fbText = `Hampir! ${item.name} itu sebenarnya termasuk ${item.type.replace(/\(.*?\)/g, '')}. Tidak apa-apa, kita belajar bersama ya.`;
+            }
+
+            AppState.botiIndex++;
+            AppState.botiBusy = true;
+            /* benda berikutnya baru muncul setelah ucapan umpan balik selesai (tidak terpotong) */
+            AudioSys.speak(fbText, () => setTimeout(() => showBotiItem(true), 600));
+        }
+
+        /* ==============================
+           10. STAGE 6: REAL-TIME CARD PREVIEW & EXPORT
+        ============================== */
+        function setMissionAction(text, el) {
+            playSfx('click');
+            AppState.missionAction = text;
+            document.querySelectorAll('.mission-act-btn').forEach(b => b.classList.remove('active'));
+            if (el) el.classList.add('active');
+            updateCardPreview();
+        }
+
+        function setSticker(text) {
+            playSfx('correct');
+            AppState.missionSticker = text;
+            updateCardPreview();
+        }
+
+        function updateCardPreview() {
+            const action = AppState.missionAction || "";
+            const reasonInput = document.getElementById('mission-reason-input');
+            const reason = reasonInput ? reasonInput.value.trim() : "";
+            
+            const timeSelect = document.getElementById('mission-time-select');
+            const time = timeSelect ? timeSelect.value : "";
+            
+            const partnerSelect = document.getElementById('mission-partner-select');
+            const partner = partnerSelect ? partnerSelect.value : "";
+
+            const name = AppState.playerName || "Detektif Iklim";
+            const avatar = AppState.avatar || "Penyelidik";
+
+            // Update DOM Elements
+            document.getElementById('card-preview-name').innerText = name;
+            const lk = [LOKAL.sekolah, LOKAL.daerah].filter(Boolean).join(', ');
+            const sl = document.getElementById('card-school-line');
+            if (sl) { sl.style.display = lk ? 'block' : 'none'; document.getElementById('card-preview-school').textContent = lk; }
+            document.getElementById('card-preview-action').innerText = action || "(Belum memilih aksi)";
+            document.getElementById('card-preview-reason').innerText = reason ? `"${reason}"` : "(Belum mengisi alasan)";
+            document.getElementById('card-preview-time').innerText = time || "-";
+            document.getElementById('card-preview-partner').innerText = partner || "-";
+            document.getElementById('card-preview-sticker').innerText = AppState.missionSticker || "(Belum ada stiker)";
+
+            // Friendly warning logic
+            const warningBox = document.getElementById('card-missing-warning');
+            if (!action || !reason) {
+                warningBox.style.display = 'block';
+                let missing = [];
+                if (!action) missing.push("1. Pilih Aksi Nyata");
+                if (!reason) missing.push("2. Tuliskan Alasanmu");
+                warningBox.innerText = `💡 Petunjuk: Silakan lengkapi [ ${missing.join(" & ")} ] di atas agar kartumu siap!`;
+            } else {
+                warningBox.style.display = 'none';
+            }
+        }
+
+        function triggerPrint() {
+            playSfx('click');
+            try {
+                window.print();
+            } catch (e) {
+                notify('Cetak belum bisa langsung di perangkat ini. Pakai tombol Unduh Kartu atau ambil tangkapan layar, ya.');
+            }
+        }
+
+        function downloadCardBlob() {
+            playSfx('click');
+            if (!cardReady()) return;
+            const name = AppState.playerName || "Detektif_Iklim";
+            const action = AppState.missionAction || "Belum memilih aksi";
+            const reasonInput = document.getElementById('mission-reason-input');
+            const reason = reasonInput ? reasonInput.value.trim() : "Belum mengisi alasan";
+            const time = document.getElementById('mission-time-select').value;
+            const partner = document.getElementById('mission-partner-select').value;
+            const sticker = AppState.missionSticker || "Belum ada stiker";
+
+            const standaloneHtml = `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><title>Kartu Misi - ${esc(name)}</title>
+<style>
+body { font-family: sans-serif; background: #f0fdf4; padding: 20px; display: flex; justify-content: center; }
+.card { background: #fff; border: 4px solid #059669; border-radius: 16px; padding: 24px; max-width: 500px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+h2 { color: #059669; margin-top: 0; text-align: center; }
+.act { background: #f0fdf4; padding: 12px; border-radius: 8px; color: #059669; font-weight: bold; font-size: 1.1rem; }
+</style>
+</head>
+<body>
+<div class="card">
+    <h2>📜 KARTU MISI NYATA DETEKTIF IKLIM</h2>
+    <p><strong>Nama Penyelidik:</strong> ${esc(name)}</p>
+    ${(LOKAL.sekolah || LOKAL.daerah) ? '<p><strong>Sekolah:</strong> ' + esc([LOKAL.sekolah, LOKAL.daerah].filter(Boolean).join(', ')) + '</p>' : ''}
+    <div class="act"><p style="margin:0; font-size:0.8rem; color:#64748b;">AKSI NYATA:</p>${esc(action)}</div>
+    <p><strong>Alasan:</strong> <em>"${esc(reason)}"</em></p>
+    <p><strong>Waktu Pelaksanaan:</strong> ${esc(time)}</p>
+    <p><strong>Mitra Misi:</strong> ${esc(partner)}</p>
+    <p><strong>Stiker Apresiasi:</strong> ${esc(sticker)}</p>
+</div>
+</body>
+</html>`;
+
+            const blob = new Blob([standaloneHtml], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Kartu_Misi_${name.replace(/\s+/g, '_')}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            AudioSys.speak("Kartu Misi berhasil diunduh.");
+        }
+
+        function copyCardText() {
+            playSfx('click');
+            if (!cardReady()) return;
+            const name = AppState.playerName || "Detektif Iklim";
+            const action = AppState.missionAction || "Belum memilih aksi";
+            const reasonInput = document.getElementById('mission-reason-input');
+            const reason = reasonInput ? reasonInput.value.trim() : "Belum mengisi alasan";
+            const time = document.getElementById('mission-time-select').value;
+            const partner = document.getElementById('mission-partner-select').value;
+            const sticker = AppState.missionSticker || "Belum ada stiker";
+
+            const textSummary = `📜 KARTU MISI NYATA DETEKTIF IKLIM ${tahunAjaran()}
+-----------------------------------
+Detektif: ${name}
+Aksi Nyata: ${action}
+Alasan: "${reason}"
+Waktu Pelaksanaan: ${time}
+Mitra Misi: ${partner}
+Stiker Apresiasi: ${sticker}
+-----------------------------------
+SiagaCilik: Detektif Iklim Sekolahku`;
+
+            const textarea = document.createElement('textarea');
+            textarea.value = textSummary;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                notify('Teks Kartu Misi berhasil disalin.');
+            } catch (err) {
+                notify('Belum bisa menyalin otomatis. Silakan ambil tangkapan layar, ya.');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        /* ==============================
+           10b. KONTEKS LOKAL, KUIS KILAT, PEMBANTU
+        ============================== */
+        const LOKAL = { sekolah: '', daerah: '', kearifan: '' };
+        const CI_WHY = {
+            1: 'Terjadi hari ini, jadi itu cuaca.',
+            2: 'Terjadi siang ini saja, jadi itu cuaca.',
+            3: 'Itu prakiraan untuk besok, jadi cuaca.',
+            4: 'Berulang setiap tahun, jadi itu iklim.',
+            5: 'Dilihat selama bertahun-tahun, jadi itu iklim.'
+        };
+        const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        function tahunAjaran() { const d = new Date(), y = d.getFullYear(); return d.getMonth() >= 6 ? `${y}/${y + 1}` : `${y - 1}/${y}`; }
+        function cardReady() {
+            const r = document.getElementById('mission-reason-input');
+            if (!AppState.missionAction || !r || !r.value.trim()) { notify('Pilih satu aksi nyata dan tulis alasanmu dulu, ya. Setelah itu kartumu siap!'); return false; }
+            return true;
+        }
+        function renderLokal() {
+            const lk = [LOKAL.sekolah, LOKAL.daerah].filter(Boolean).join(', ');
+            const c = document.getElementById('cover-lokal');
+            c.textContent = lk ? '🏫 ' + lk : ''; c.style.display = lk ? 'block' : 'none';
+            const kb = document.getElementById('kearifan-box');
+            if (!kb.dataset.def) kb.dataset.def = kb.innerHTML;
+            if (LOKAL.kearifan) {
+                kb.textContent = '';
+                const s = document.createElement('strong'); s.textContent = '🌾 Kalender Musim Lokal: ';
+                kb.append(s, LOKAL.kearifan + '. Polanya berulang setiap tahun, jadi itu contoh Iklim!');
+            } else kb.innerHTML = kb.dataset.def;
+            updateCardPreview();
+        }
+        function applyLokal() {
+            const v = id => document.getElementById(id).value.trim();
+            LOKAL.sekolah = v('lokal-sekolah'); LOKAL.daerah = v('lokal-daerah'); LOKAL.kearifan = v('lokal-kearifan').replace(/[.!\s]+$/, '');
+            renderLokal(); playSfx('correct'); notify('Pengaturan sekolah dan daerah sudah diterapkan.');
+        }
+        function resetLokal() {
+            ['lokal-sekolah', 'lokal-daerah', 'lokal-kearifan'].forEach(id => document.getElementById(id).value = '');
+            LOKAL.sekolah = LOKAL.daerah = LOKAL.kearifan = ''; renderLokal(); playSfx('click');
+        }
+
+        /* Kuis Kilat: 2 soal per materi (Tahap 2-5). q = soal, o = pilihan, a = indeks jawaban, w = penjelasan. Tanpa skor dan tanpa waktu. */
+        const KUIS = {
+            2: [
+                { q: 'Pohon dan rumput ditanam di lahan kosong. Mana yang termasuk makhluk hidup (komponen biotik)?', o: ['Tanah dan udara', 'Pohon dan rumput', 'Batu dan air'], a: 1, w: 'Pohon dan rumput hidup, jadi biotik. Tanah, udara, batu, dan air tidak hidup, jadi abiotik.' },
+                { q: 'Mengapa selokan perlu dibersihkan sebelum musim hujan?', o: ['Supaya air hujan mengalir lancar dan tidak menggenang', 'Supaya selokan berwarna cerah', 'Supaya sampah makin banyak'], a: 0, w: 'Selokan bersih membuat air mengalir lancar, jadi sekolah tidak tergenang.' }
+            ],
+            3: [
+                { q: 'Mana yang menunjukkan iklim?', o: ['Siang ini hujan deras', 'Besok diperkirakan mendung', 'Setiap tahun ada musim hujan dan musim kemarau'], a: 2, w: 'Iklim adalah pola yang berulang selama bertahun-tahun.' },
+                { q: 'Hari ini hujan sangat deras. Apakah itu pasti tanda perubahan iklim?', o: ['Ya, pasti', 'Belum tentu, perlu melihat pola jangka panjang', 'Tidak ada hubungannya sama sekali'], a: 1, w: 'Satu hari hujan deras adalah cuaca. Tanda perubahan iklim dilihat dari pola jangka panjang.' }
+            ],
+            4: [
+                { q: 'Saat ada tanda bahaya di sekolah, apa yang pertama dilakukan?', o: ['Berlari sendiri keluar kelas', 'Mendengarkan arahan guru', 'Mengambil semua barang di tas'], a: 1, w: 'Arahan guru membuat kita bergerak teratur dan aman.' },
+                { q: 'Mengapa kita berjalan tenang menuju titik kumpul?', o: ['Supaya cepat sampai paling depan', 'Supaya tidak perlu berhitung', 'Supaya tidak berdesakan dan semua teman tetap aman'], a: 2, w: 'Berjalan tenang mencegah terjatuh dan membuat kita bisa membantu teman.' }
+            ],
+            5: [
+                { q: 'Boti belajar dari contoh. Jika contohnya sedikit dan sama saja, apa yang mungkin terjadi?', o: ['Boti bisa keliru pada benda yang berbeda', 'Boti pasti selalu benar', 'Boti jadi punya perasaan'], a: 0, w: 'Robot hanya sepintar contoh yang diberikan, jadi contohnya harus beragam.' },
+                { q: 'Siapa yang sebaiknya memeriksa hasil kerja Boti?', o: ['Tidak perlu diperiksa', 'Manusia', 'Robot lain saja'], a: 1, w: 'Manusia tetap memeriksa hasil kerja robot karena KA bisa keliru.' }
+            ]
+        };
+        function renderKuis(n) {
+            const box = document.getElementById('quiz-' + n); if (!box) return;
+            box.innerHTML = '<h3 style="margin-top:0;">🧩 Kuis Kilat</h3><p style="font-size:.9rem;margin-top:0;">Dua soal singkat bersama kelompok. Tidak ada nilai dan tidak ada waktu.</p>';
+            let done = 0;
+            KUIS[n].forEach((k, qi) => {
+                const g = document.createElement('div'); g.className = 'quiz-q'; g.setAttribute('role', 'group');
+                const t = document.createElement('p'); t.className = 'qt'; t.id = `qt-${n}-${qi}`; t.textContent = `${qi + 1}. ${k.q}`;
+                g.setAttribute('aria-labelledby', t.id);
+                const ops = document.createElement('div'); ops.className = 'quiz-opts';
+                const fb = document.createElement('p'); fb.className = 'quiz-fb'; fb.setAttribute('aria-live', 'polite');
+                k.o.forEach((txt, oi) => {
+                    const b = document.createElement('button'); b.className = 'btn-outline'; b.textContent = txt;
+                    b.onclick = () => {
+                        if (oi === k.a) {
+                            playSfx('correct'); ops.querySelectorAll('button').forEach(x => x.disabled = true); b.classList.add('selected');
+                            fb.className = 'quiz-fb ok'; fb.textContent = '✔️ Tepat! ' + k.w;
+                            done++; const fin = done === KUIS[n].length;
+                            if (fin) { const f = document.createElement('p'); f.className = 'quiz-fb ok'; f.textContent = '🎉 Kuis kilat selesai. Hebat!'; box.appendChild(f); }
+                            AudioSys.speak('Tepat! ' + k.w + (fin ? ' Kuis kilat selesai. Hebat!' : ''));
+                        } else {
+                            playSfx('wrong'); fb.className = 'quiz-fb try'; fb.textContent = 'Hampir! Baca materi di atas sekali lagi, lalu pilih jawaban lain, ya.';
+                            AudioSys.speak('Hampir! Coba pilih jawaban lain, ya.');
+                        }
+                    };
+                    ops.appendChild(b);
+                });
+                g.append(t, ops, fb); box.appendChild(g);
+            });
+        }
+
+        /* Narasi offline butuh suara Bahasa Indonesia di perangkat; beri tahu jika belum ada */
+        function cekSuaraId() {
+            const s = window.speechSynthesis; if (!s) return;
+            const vs = s.getVoices() || [];
+            if (vs.length && !vs.some(x => /^id/i.test(x.lang))) {
+                const n = document.createElement('div'); n.className = 'wake-note'; n.setAttribute('role', 'status'); n.style.display = 'block';
+                n.textContent = 'ℹ️ Suara Bahasa Indonesia belum ada di perangkat ini. Pasang paket suara Indonesia di pengaturan HP agar narasi jelas dan tetap jalan tanpa internet.';
+                n.onclick = () => n.remove(); document.body.appendChild(n); setTimeout(() => n.remove(), 9000);
+            }
+        }
+
+        /* ==============================
+           11. APPLICATION INITIALIZATION
+        ============================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            setSound(true);
+            [2, 3, 4, 5].forEach(renderKuis);
+            const ta = document.getElementById('card-ta'); if (ta) ta.textContent = 'Tahun Ajaran ' + tahunAjaran();
+            setTimeout(cekSuaraId, 2500);
+            AudioSys.startBgm();
+            /* Narasi langsung berjalan saat dibuka (jika browser mengizinkan; jika tidak, mulai di ketukan pertama) */
+            setTimeout(() => announceStage(), 700);
+        });
+    </script>
+</body>
+</html>
